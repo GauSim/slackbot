@@ -1,0 +1,16 @@
+{
+  "name": "delete-me",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "clientId=106108509589.109495619184 clientSecret=a31ce7b384a6e984ef0e5b6662b089c4 redirectUri=http://0.0.0.0:3000/oauth port=3000 node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "botkit": "0.4.2",
+    "request": "2.79.0",
+    "request-promise": "4.1.1"
+  }
+}
