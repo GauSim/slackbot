@@ -29,8 +29,8 @@ const Botkit = require('botkit');
 const { whatsOnline } = require('./whats-online');
 
 
-if (!process.env.clientId || !process.env.clientSecret || !process.env.port || !process.env.redirectUri) {
-    console.log('Error: Specify clientId clientSecret redirectUri and port in environment');
+if (!process.env.clientId || !process.env.clientSecret || !process.env.redirectUri) {
+    console.log('Error: Specify clientId clientSecret redirectUri in environment');
     process.exit(1);
 }
 
@@ -47,7 +47,7 @@ var controller = Botkit.slackbot({
     }
     );
 
-controller.setupWebserver(process.env.port, function(err, webserver) {
+controller.setupWebserver(process.env.PORT || 8080, function(err, webserver) {
     controller.createWebhookEndpoints(controller.webserver);
 
     controller.createOauthEndpoints(controller.webserver, function(err, req, res) {
