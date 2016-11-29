@@ -25,7 +25,7 @@ This is a sample Slack Button application that adds a bot to one or many slack t
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*/
 
 /* Uses the slack button feature to offer a real time bot to multiple teams */
-const Botkit = require('Botkit');
+const Botkit = require('botkit');
 const { whatsOnline } = require('./whats-online');
 
 
