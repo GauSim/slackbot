@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm install && node index.js"
+    "start": "node index.js",
+    "local":"clientId=106108509589.109495619184 clientSecret=a31ce7b384a6e984ef0e5b6662b089c4 redirectUri=http://0.0.0.0:3000/oauth node index.js"
   },
   "author": "",
   "license": "ISC",

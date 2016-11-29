@@ -30,8 +30,10 @@ const { whatsOnline } = require('./whats-online');
 
 
 if (!process.env.clientId || !process.env.clientSecret || !process.env.redirectUri) {
+    console.log(process.env);
     console.log('Error: Specify clientId clientSecret redirectUri in environment');
-    process.exit(1);
+    throw process.env;
+    //process.exit(1);
 }
 
 
