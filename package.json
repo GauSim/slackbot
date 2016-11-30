@@ -5,13 +5,20 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "local":"clientId=106108509589.109495619184 clientSecret=a31ce7b384a6e984ef0e5b6662b089c4 redirectUri=http://0.0.0.0:3000/oauth node index.js"
+    "test": "rm -f storage.js && tsc storage -t 'es6' && node storage_test.js",
+    "local": "clientId=106108509589.109495619184 clientSecret=a31ce7b384a6e984ef0e5b6662b089c4 redirectUri=http://0.0.0.0:3000/oauth node index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^3.4.6",
     "botkit": "0.4.2",
+    "redis": "^2.6.3",
     "request": "2.79.0",
     "request-promise": "4.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^2.0.10",
+    "unit.js": "^2.0.0"
   }
 }
