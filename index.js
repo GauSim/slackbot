@@ -26,30 +26,31 @@ This is a sample Slack Button application that adds a bot to one or many slack t
 
 /* Uses the slack button feature to offer a real time bot to multiple teams */
 const Botkit = require('botkit');
-const { whatsOnline } = require('./whats-online');
+const Storage = require('./lib/Storage');
+const { registerActions } = require('./lib/actions');
 
-
-if (!process.env.clientId || !process.env.clientSecret || !process.env.redirectUri) {
+if (!process.env.clientId || !process.env.clientSecret || !process.env.redirectUri || !process.env.PORT || !process.env.REDIS_URL) {
     console.log(process.env);
-    console.log('Error: Specify clientId clientSecret redirectUri in environment');
-    throw process.env;
-    //process.exit(1);
+    throw 'Error: Specify clientId clientSecret redirectUri in environment \n\n' + JSON.stringify(process.env);
+    // process.exit(1);
+}
+
+const botframework_config = {
+    // json_file_store: './db_slackbutton_bot/', // use for local, will save stuff on local disc
+    storage: Storage(process.env.REDIS_URL)
+    // rtm_receive_messages: false, // disable rtm_receive_messages if you enable events api
+}
+const slack_config = {
+    clientId: process.env.clientId,
+    clientSecret: process.env.clientSecret,
+    redirectUri: process.env.redirectUri,
+    scopes: ['bot'],
 }
 
 
-var controller = Botkit.slackbot({
-    json_file_store: './db_slackbutton_bot/',
-    // rtm_receive_messages: false, // disable rtm_receive_messages if you enable events api
-}).configureSlackApp(
-    {
-        clientId: process.env.clientId,
-        clientSecret: process.env.clientSecret,
-        redirectUri: process.env.redirectUri,
-        scopes: ['bot'],
-    }
-    );
+const controller = Botkit.slackbot(botframework_config).configureSlackApp(slack_config);
 
-controller.setupWebserver(process.env.PORT || 8080, function(err, webserver) {
+controller.setupWebserver(process.env.PORT, function(err, webserver) {
     controller.createWebhookEndpoints(controller.webserver);
 
     controller.createOauthEndpoints(controller.webserver, function(err, req, res) {
@@ -105,16 +106,9 @@ controller.on('rtm_close', function(bot) {
     // you may want to attempt to re-open
 });
 
-controller.hears('hello', 'direct_message', function(bot, message) {
-    bot.reply(message, 'Hello!');
-});
 
-
-controller.hears(["what's online", "whats online", 'version', '^version$'], 'direct_mention', function(bot, message) {
-    whatsOnline().then(text => {
-        bot.reply(message, text);
-    });
-});
+// register all actions
+registerActions(controller);
 
 controller.hears('^stop', 'direct_message', function(bot, message) {
     bot.reply(message, 'Goodbye');
@@ -135,8 +129,9 @@ controller.on(['direct_message', 'mention', 'direct_mention'], function(bot, mes
 controller.storage.teams.all(function(err, teams) {
 
     if (err) {
-        throw new Error(err);
-    }
+        console.error("NO Teams found to join, may have to re-login");
+        teams = [];
+    } 
 
     // connect all teams with bots up to slack!
     for (var t in teams) {
