@@ -110,21 +110,6 @@ controller.on('rtm_close', function(bot) {
 // register all actions
 registerActions(controller);
 
-controller.hears('^stop', 'direct_message', function(bot, message) {
-    bot.reply(message, 'Goodbye');
-    bot.rtm.close();
-});
-
-controller.on(['direct_message', 'mention', 'direct_mention'], function(bot, message) {
-    bot.api.reactions.add({
-        timestamp: message.ts,
-        channel: message.channel,
-        name: 'robot_face',
-    }, function(err) {
-        if (err) { console.log(err) }
-        bot.reply(message, 'I heard you loud and clear boss.');
-    });
-});
 
 controller.storage.teams.all(function(err, teams) {
 
