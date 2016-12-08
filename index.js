@@ -29,7 +29,10 @@ const Botkit = require('botkit');
 const Storage = require('./lib/Storage');
 const { registerActions } = require('./lib/actions');
 const { keepAlive } = require('./helper/heroku');
+const { testing } = require('./test');
 
+
+testing();
 
 if (!process.env.clientId || !process.env.clientSecret || !process.env.redirectUri || !process.env.PORT || !process.env.REDIS_URL) {
     console.log(process.env);
