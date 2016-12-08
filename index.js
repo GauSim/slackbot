@@ -28,12 +28,15 @@ This is a sample Slack Button application that adds a bot to one or many slack t
 const Botkit = require('botkit');
 const Storage = require('./lib/Storage');
 const { registerActions } = require('./lib/actions');
+const { keepAlive } = require('./helper/heroku');
+
 
 if (!process.env.clientId || !process.env.clientSecret || !process.env.redirectUri || !process.env.PORT || !process.env.REDIS_URL) {
     console.log(process.env);
     throw 'Error: Specify clientId clientSecret redirectUri in environment \n\n' + JSON.stringify(process.env);
     // process.exit(1);
 }
+
 
 const botframework_config = {
     // json_file_store: './db_slackbutton_bot/', // use for local, will save stuff on local disc
@@ -132,3 +135,5 @@ controller.storage.teams.all(function(err, teams) {
     }
 
 });
+
+keepAlive();
