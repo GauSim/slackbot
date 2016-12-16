@@ -13,7 +13,7 @@
   "dependencies": {
     "bluebird": "^3.4.6",
     "botkit": "^0.4.2",
-    "moment": "/Users/gasi2.17.1",
+    "moment": "^2.17.1",
     "redis": "^2.6.3",
     "request": "^2.79.0",
     "request-promise": "^4.1.1",
@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "mocha": "^3.2.0",
-    "sinon": "/Users/gasi1.17.6",
+    "sinon": "^1.17.6",
     "unit.js": "^2.0.0"
   }
 }
