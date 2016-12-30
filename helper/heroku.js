@@ -8,7 +8,7 @@ function keepAlive() {
 
         try {
             if (process.env.pingURL) {
-                http.get(process.env.pingURL);
+                http.get(process.env.pingURL + "/ping");
             } else {
                 console.error('process.env.pingURL missing');
             }

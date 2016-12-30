@@ -29,6 +29,7 @@ const Botkit = require('botkit');
 const Storage = require('./lib/Storage');
 const { registerActions } = require('./lib/actions');
 const { keepAlive } = require('./helper/heroku');
+const { webhookMiddleware } = require('./lib/actions/hooks');
 
 if (!process.env.clientId || !process.env.clientSecret || !process.env.redirectUri || !process.env.PORT || !process.env.REDIS_URL) {
     console.log(process.env);
@@ -49,22 +50,6 @@ const slack_config = {
     scopes: ['bot'],
 }
 
-
-const controller = Botkit.slackbot(botframework_config).configureSlackApp(slack_config);
-
-controller.setupWebserver(process.env.PORT, function(err, webserver) {
-    controller.createWebhookEndpoints(controller.webserver);
-
-    controller.createOauthEndpoints(controller.webserver, function(err, req, res) {
-        if (err) {
-            res.status(500).send('ERROR: ' + err);
-        } else {
-            res.send('Success!');
-        }
-    });
-});
-
-
 // just a simple way to make sure we don't
 // connect to the RTM twice for the same team
 var _bots = {};
@@ -72,18 +57,53 @@ function trackBot(bot) {
     _bots[bot.config.token] = bot;
 }
 
-controller.on('create_bot', function(bot, config) {
+const controller = Botkit.slackbot(botframework_config).configureSlackApp(slack_config);
+
+controller.setupWebserver(process.env.PORT, function (err, webserver) {
+
+    webserver.get('/ping', (req, res) => res.send('pong'));
+
+    controller.createWebhookEndpoints(controller.webserver);
+    controller.createOauthEndpoints(controller.webserver, function (err, req, res) {
+        if (err) {
+            res.status(500).send('ERROR: ' + err);
+        } else {
+            res.send('Success!');
+        }
+    });
+
+    /*
+    webserver.get('/allkeys', function (req, res) {
+        const BaseStorage = require('./lib/Storage/BaseStorage');
+        const store = new BaseStorage(process.env.REDIS_URL);
+        return store.allAsMap()
+            .then(allValues => {
+
+                const body = JSON.stringify(allValues, null, 2);
+                res.end(body);
+            })
+            .finally(() => store.kill());
+    });
+    */
+
+    webserver.get('/hooks/:hook', (req, res) => webhookMiddleware(req.params.hook, _bots, req, res));
+});
+
+
+
+
+controller.on('create_bot', function (bot, config) {
 
     if (_bots[bot.config.token]) {
         // already online! do nothing.
     } else {
-        bot.startRTM(function(err) {
+        bot.startRTM(function (err) {
 
             if (!err) {
                 trackBot(bot);
             }
 
-            bot.startPrivateConversation({ user: config.createdBy }, function(err, convo) {
+            bot.startPrivateConversation({ user: config.createdBy }, function (err, convo) {
                 if (err) {
                     console.log(err);
                 } else {
@@ -99,11 +119,11 @@ controller.on('create_bot', function(bot, config) {
 
 
 // Handle events related to the websocket connection to Slack
-controller.on('rtm_open', function(bot) {
+controller.on('rtm_open', function (bot) {
     console.log('** The RTM api just connected!');
 });
 
-controller.on('rtm_close', function(bot) {
+controller.on('rtm_close', function (bot) {
     console.log('** The RTM api just closed');
     // you may want to attempt to re-open
 });
@@ -113,17 +133,17 @@ controller.on('rtm_close', function(bot) {
 registerActions(controller);
 
 
-controller.storage.teams.all(function(err, teams) {
+controller.storage.teams.all(function (err, teams) {
 
     if (err) {
         console.error("NO Teams found to join, may have to re-login");
         teams = [];
-    } 
+    }
 
     // connect all teams with bots up to slack!
     for (var t in teams) {
         if (teams[t].bot) {
-            controller.spawn(teams[t]).startRTM(function(err, bot) {
+            controller.spawn(teams[t]).startRTM(function (err, bot) {
                 if (err) {
                     console.log('Error connecting bot to Slack:', err);
                 } else {
