@@ -86,7 +86,7 @@ controller.setupWebserver(process.env.PORT, function (err, webserver) {
     });
     */
 
-    webserver.get('/hooks/:user/:hook', (req, res) => webhookMiddleware(req.params.user + '/' + req.params.hook, _bots, req, res));
+    webserver.get('/hooks/:user/:hook', (req, res) => webhookMiddleware((req.params.user + '/' + req.params.hook), _bots, req, res));
 });
 
 
