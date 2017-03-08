@@ -14,5 +14,4 @@ npm install;
 echo "creat zip file artefact ($filename)";
 zip -r $filename *;
 
-
-echo "done";
+echo "done => $filename";
