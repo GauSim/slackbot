@@ -8,6 +8,9 @@ filename="slackbot#$gitRev@$timestamp.zip";
 echo "clean all node modules";
 rm -rf node_modules;
 
+echo "clean artefacts";
+rm *.zip;
+
 echo "install dependency";
 npm install;
 
