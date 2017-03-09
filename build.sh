@@ -6,7 +6,7 @@ filename="slackbot#$gitRev@$timestamp.zip";
 
 
 echo "clean all node modules";
-rm -rf node_modules;
+#rm -rf node_modules;
 
 echo "clean artefacts";
 rm *.zip;
