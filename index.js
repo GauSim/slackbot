@@ -155,4 +155,5 @@ controller.storage.teams.all(function (err, teams) {
 
 });
 
-keepAlive();
+// self ping 
+// keepAlive();
