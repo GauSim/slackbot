@@ -124,6 +124,9 @@ const DEFAULT_ENVIRONMENTS = [
 
 class WhatsOnline {
 
+    get: (opt: string | { uri: string, method: 'GET', resolveWithFullResponse: boolean }) => any;
+    doNotThrow: boolean;
+
     constructor(get, doNotThrow = true) {
         this.get = opt => {
             const url = typeof opt === 'string' ? opt : opt.uri;

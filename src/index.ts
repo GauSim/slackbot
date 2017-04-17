@@ -27,9 +27,9 @@ This is a sample Slack Button application that adds a bot to one or many slack t
 /* Uses the slack button feature to offer a real time bot to multiple teams */
 const Botkit = require('botkit');
 const Storage = require('./lib/Storage');
-const { registerActions } = require('./lib/actions');
-const { keepAlive } = require('./helper/heroku');
-const { webhookMiddleware } = require('./lib/actions/hooks');
+import { registerActions } from './lib/actions';
+import { keepAlive } from './helper/heroku';
+import { webhookMiddleware } from './lib/actions/hooks';
 
 if (!process.env.clientId || !process.env.clientSecret || !process.env.redirectUri || !process.env.PORT || !process.env.REDIS_URL) {
     console.log(process.env);

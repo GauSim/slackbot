@@ -1,5 +1,5 @@
-const BaseStorage = require('./BaseStorage');
-const PartialStore = require('./PartialStore');
+import BaseStorage from './BaseStorage';
+import PartialStore from './PartialStore';
 
 // check out => http://redis4you.com/
 // const uri = 'redis://simon:61037bdf0be4e6c50c0b60c47cd52a42@50.30.35.9:3328/';
@@ -31,7 +31,7 @@ const toCallbackAPI = (partialStore) => {
 }
 
 
-module.exports = function(uri) {
+module.exports = function (uri) {
 
     // create main store
     const db = new BaseStorage(uri);

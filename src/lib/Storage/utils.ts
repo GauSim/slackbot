@@ -1,7 +1,7 @@
-const BaseStorage = require('./BaseStorage');
+import BaseStorage from './BaseStorage'
 
 
-const cleanRedis = (uri) => {
+export function cleanRedis(uri: string) {
   const base = new BaseStorage(uri);
   return base.clearAll().then(done => {
     console.log('redis is clean');
@@ -10,7 +10,7 @@ const cleanRedis = (uri) => {
       return base.all()
         .catch(error => {
           if (error && error.displayName === 'NotFound') {
-            console.log('OK DONE')
+            console.log('OK DONE');
             return [];
           } else {
             throw error;
@@ -19,8 +19,4 @@ const cleanRedis = (uri) => {
         .then(listofValues => (console.log('listofValues', listofValues), true))
     });
   });
-}
-
-module.exports = {
-  cleanRedis: cleanRedis
 }

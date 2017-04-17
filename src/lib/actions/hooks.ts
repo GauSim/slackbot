@@ -1,10 +1,14 @@
 
-const BaseStorage = require('../Storage/BaseStorage');
-const PartialStore = require('../Storage/PartialStore');
-const crypto = require('crypto');
-const config = require('../config').default;
+import BaseStorage from '../Storage/BaseStorage';
+import PartialStore from '../Storage/PartialStore';
+import config from '../config';
+import crypto = require('crypto');
 
 class WebhookService {
+
+  hooks: PartialStore;
+  subscriptions: PartialStore;
+
   constructor(baseStore) {
     this.subscriptions = new PartialStore(baseStore, 'subscriptions');
     this.hooks = new PartialStore(baseStore, 'hooks');
@@ -39,7 +43,7 @@ class WebhookService {
   }
 
   getAll() {
-    return this.hooks.all().then(hookList => {
+    return this.hooks.all<{ name: string }>().then(hookList => {
       return hookList.length > 0 ? `found ${hookList.length} hooks:\n` + hookList.map(hook => hookToUrl(hook.name)).join('\n') : 'no hooks found';
     });
   }
@@ -81,7 +85,7 @@ function createBuildResultsUrl(relativUrl) {
 /* usage example:
 curl "http://core-slackbot.herokuapp.com/hooks/gasi/df9e5ec3455f9dfe0480d83e8ace0caf548b302d036bc95bc4c6b1f74d8db802?msg=${bamboo.buildResultKey}&buildResultsUrl=${bamboo.buildResultsUrl}" 
 */
-function webhookMiddleware(hookName, bots, req, res) {
+export function webhookMiddleware(hookName, bots, req, res) {
 
   const inputMsg = req.query.msg;
   if (!inputMsg) { return res.status(404).json(null); };
@@ -108,7 +112,7 @@ function webhookMiddleware(hookName, bots, req, res) {
         throw (`${hookName} not found`);
       return match;
     })
-    .then(match => hookService.hooks.get(match))
+    .then(match => hookService.hooks.get<{ message: { team: string, text: string }, name: string }>(match))
     .then(match => {
 
       Object.keys(bots).forEach(key => {
@@ -137,106 +141,107 @@ function webhookMiddleware(hookName, bots, req, res) {
       console.error(error);
       res.status(404).json(error);
     })
-    .finally(() => baseStore.kill());
+    .then(() => baseStore.kill());
 
 }
 
-module.exports = {
-  webhookMiddleware: webhookMiddleware,
-  actions: [
-    {
-      triggers: [
-        'hooks all'
-      ],
-      help: `lists hooks`,
-      handler: (bot, message) => {
-        bot.reply(message, `thinking ...`);
+const actions = [
+  {
+    triggers: [
+      'hooks all'
+    ],
+    help: `lists hooks`,
+    handler: (bot, message) => {
+      bot.reply(message, `thinking ...`);
 
-        const baseStore = new BaseStorage(process.env.REDIS_URL);
-        const hookService = new WebhookService(baseStore);
+      const baseStore = new BaseStorage(process.env.REDIS_URL);
+      const hookService = new WebhookService(baseStore);
 
-        hookService.getAll()
-          .then(msg => {
-            bot.reply(message, msg);
-          })
-          .catch(ex => bot.reply(message, JSON.stringify(ex)))
-          .finally(() => baseStore.kill());
-      }
-    },
-    {
-      triggers: [
-        'hooks clean all', 'hooks clear all'
-      ],
-      help: `remove all registerd hooks`,
-      handler: (bot, message) => {
-        bot.reply(message, `thinking on it ...`);
-
-        const baseStore = new BaseStorage(process.env.REDIS_URL);
-        const hookService = new WebhookService(baseStore);
-
-        hookService.clean()
-          .then(msg => {
-            bot.reply(message, 'done');
-          })
-          .then(() => hookService.getAll())
-          .then(msg => {
-            bot.reply(message, msg);
-          })
-          .catch(ex => bot.reply(message, JSON.stringify(ex)))
-          .finally(() => baseStore.kill());
-      }
-    },
-    {
-      triggers: [
-        'hooks remove', 'hooks delete'
-      ],
-      help: "remove a hook like: hooks remove [hook-name-here]",
-      handler: (bot, message) => {
-        bot.reply(message, `ok, removing hook ...`);
-
-        const baseStore = new BaseStorage(process.env.REDIS_URL);
-        const hookService = new WebhookService(baseStore);
-        const hookName = message.text.replace('hooks remove', '').trim();
-
-        hookService.removeHook(hookName)
-          .then(msg => {
-            bot.reply(message, 'done');
-          })
-          .then(() => hookService.getAll())
-          .then(msg => {
-            bot.reply(message, msg);
-          })
-          .catch(ex => bot.reply(message, JSON.stringify(ex)))
-          .finally(() => baseStore.kill());
-      }
-    },
-    {
-      triggers: [
-        'hooks add', 'hooks create'
-      ],
-      help: "add a webhook to this channel, conversation",
-      handler: (bot, message) => {
-        bot.reply(message, `ok, adding hook ...`);
-
-        const baseStore = new BaseStorage(process.env.REDIS_URL);
-        const userStore = new PartialStore(baseStore, 'users');
-
-
-
-        userStore.get(message.user)
-          .then(userInfo => {
-            const hookService = new WebhookService(baseStore);
-            const hookName = userInfo.user + '/' + hookService.createHookName(userInfo.user + Date.now().toString());
-            return hookService.addHook(hookName, message)
-              .then(() => hookName);
-          })
-          .then((hookName) => {
-            bot.reply(message, `your hook is ready at ready: \n ` + hookToUrl(hookName));
-          })
-          .catch(ex => bot.reply(message, JSON.stringify(ex)))
-          .finally(() => baseStore.kill());
-
-      }
+      hookService.getAll()
+        .then(msg => {
+          bot.reply(message, msg);
+        })
+        .catch(ex => bot.reply(message, JSON.stringify(ex)))
+        .then(() => baseStore.kill());
     }
-  ]
+  },
+  {
+    triggers: [
+      'hooks clean all', 'hooks clear all'
+    ],
+    help: `remove all registerd hooks`,
+    handler: (bot, message) => {
+      bot.reply(message, `thinking on it ...`);
+
+      const baseStore = new BaseStorage(process.env.REDIS_URL);
+      const hookService = new WebhookService(baseStore);
+
+      hookService.clean()
+        .then(msg => {
+          bot.reply(message, 'done');
+        })
+        .then(() => hookService.getAll())
+        .then(msg => {
+          bot.reply(message, msg);
+        })
+        .catch(ex => bot.reply(message, JSON.stringify(ex)))
+        .then(() => baseStore.kill());
+    }
+  },
+  {
+    triggers: [
+      'hooks remove', 'hooks delete'
+    ],
+    help: "remove a hook like: hooks remove [hook-name-here]",
+    handler: (bot, message) => {
+      bot.reply(message, `ok, removing hook ...`);
+
+      const baseStore = new BaseStorage(process.env.REDIS_URL);
+      const hookService = new WebhookService(baseStore);
+      const hookName = message.text.replace('hooks remove', '').trim();
+
+      hookService.removeHook(hookName)
+        .then(msg => {
+          bot.reply(message, 'done');
+        })
+        .then(() => hookService.getAll())
+        .then(msg => {
+          bot.reply(message, msg);
+        })
+        .catch(ex => bot.reply(message, JSON.stringify(ex)))
+        .then(() => baseStore.kill());
+    }
+  },
+  {
+    triggers: [
+      'hooks add', 'hooks create'
+    ],
+    help: "add a webhook to this channel, conversation",
+    handler: (bot, message) => {
+      bot.reply(message, `ok, adding hook ...`);
+
+      const baseStore = new BaseStorage(process.env.REDIS_URL);
+      const userStore = new PartialStore(baseStore, 'users');
+
+
+
+      userStore.get<{ user: string }>(message.user)
+        .then(userInfo => {
+          const hookService = new WebhookService(baseStore);
+          const hookName = userInfo.user + '/' + hookService.createHookName(userInfo.user + Date.now().toString());
+          return hookService.addHook(hookName, message)
+            .then(() => hookName);
+        })
+        .then((hookName) => {
+          bot.reply(message, `your hook is ready at ready: \n ` + hookToUrl(hookName));
+        })
+        .catch(ex => bot.reply(message, JSON.stringify(ex)))
+        .then(() => baseStore.kill());
+
+    }
+  }
+];
+
+export {
+  actions
 }

@@ -1,10 +1,10 @@
-const _ = require('underscore');
-const fun = require('./fun');
+import _ = require('underscore');
+import * as fun from './fun';
 
 const actions = [
-    ... require('./whats-online').actions,
+    ...require('./whats-online').actions,
     require('./die').action,
-    ... require('./hooks').actions,
+    ...require('./hooks').actions,
     {
         triggers: ['say hello', 'hello'],
         help: 'I will say hello :)',
@@ -18,7 +18,7 @@ const actions = [
 
 
 
-const registerActions = (controller) => {
+export function registerActions(controller) {
 
     actions.forEach(action => {
         controller.hears(action.triggers, ['direct_message', 'mention', 'direct_mention'], action.handler);
@@ -43,16 +43,10 @@ const registerActions = (controller) => {
             channel: message.channel,
             name: 'robot_face',
         }, function (err) {
-                
+
             if (err) { console.log(err) }
             fun.getRandomMsg(funnyStuff => bot.reply(message, funnyStuff));
         });
     });
 
 }
-
-
-module.exports = {
-    registerActions: registerActions
-}
-

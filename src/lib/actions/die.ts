@@ -7,7 +7,7 @@ module.exports = {
     handler: (bot, message) => {
 
       bot.reply(message, `are you sure? whats the passowrod? `);
-      return; 
+      return;
 
       /*
       // todo: add PW check :)

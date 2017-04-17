@@ -1,5 +1,15 @@
-class PartialStore {
-  constructor(_store, _name) {
+import { IBaseStorage } from './BaseStorage';
+
+export default class PartialStore implements IBaseStorage {
+
+  get: <T>(key: string) => Promise<T>;
+  save: <T>(key: string, value: any) => Promise<T>;
+  delete: <T>(key: string) => Promise<T>;
+  all: <T>() => Promise<T[]>;
+  keys: () => Promise<string[]>;
+  matchKey: (key: string) => Promise<string[]>;
+
+  constructor(_store: IBaseStorage, private _name: string) {
 
     const toKey = k => `${_name}:${k}`;
 
@@ -32,5 +42,3 @@ class PartialStore {
     this._name = _name;
   }
 }
-
-module.exports = PartialStore;

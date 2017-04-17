@@ -1,17 +1,44 @@
-const bluebird = require('bluebird');
-const redis = require("redis");
+import bluebird = require('bluebird');
+import redis = require("redis");
 
-bluebird.promisifyAll(redis.RedisClient.prototype);
-bluebird.promisifyAll(redis.Multi.prototype);
+
+
+bluebird.promisifyAll((redis as any).RedisClient.prototype);
+bluebird.promisifyAll((redis as any).Multi.prototype);
 
 const EMPTY_BLOB = '';
 
+interface IRedisClient {
+  getAsync: (key: string) => Promise<string>;
+  setAsync: (key: string, value: any) => Promise<string>;
+  keysAsync: (key: string) => Promise<string[]>;
+  quit();
+}
 
-class BaseStorage {
+export interface IBaseStorage {
+  get: <T>(key: string) => Promise<T>;
+  save: <T>(key: string, value: any) => Promise<T>;
+  delete: <T>(key: string) => Promise<T>;
+  all: <T>(partial?: string) => Promise<T[]>;
+  keys: () => Promise<string[]>;
+  matchKey: (key: string) => Promise<string[]>;
+}
+
+export default class BaseStorage implements IBaseStorage {
+
+  get: (key: string) => Promise<Object>;
+  save: (key: string, value: any) => Promise<Object>;
+  delete: (key: string) => Promise<Object>;
+  keys: () => Promise<string[]>;
+  matchKey: (key: string) => Promise<string[]>;
+  kill: () => void;
+  all: (partial?: string) => Promise<Object[]>;
+  clearAll: (partial?: string) => Promise<Object[]>;
+  allAsMap: () => Promise<any>;
 
   constructor(uri) {
 
-    const _client = redis.createClient(uri);
+    const _client: IRedisClient = redis.createClient(uri) as any as IRedisClient;
 
     this.get = k => _client.getAsync(k)
       .then(data => {
@@ -80,5 +107,3 @@ class BaseStorage {
   }
 
 }
-
-module.exports = BaseStorage;

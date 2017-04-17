@@ -1,4 +1,4 @@
-const _ = require('underscore');
+import _ = require('underscore');
 
 const YES = [
     'ok!',
@@ -99,13 +99,10 @@ sleep...
     '... buying the world a Coke'
 ];
 
-function getRandomMsg(reply) {
+export function getRandomMsg(reply: (msg: string) => void) {
 
     reply(
         _(YES).sample(1)[0] + '   ' + _(FUNNY_STUFF).sample(1)[0]
     );
 }
 
-module.exports = {
-    getRandomMsg: getRandomMsg
-}
