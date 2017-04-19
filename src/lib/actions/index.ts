@@ -1,10 +1,12 @@
 import _ = require('underscore');
 import * as fun from './fun';
+import { actions as hookActions } from './hooks';
+import { actions as whatsOnlineActions } from './whats-online';
+
 
 const actions = [
-    ...require('./whats-online').actions,
-    require('./die').action,
-    ...require('./hooks').actions,
+    ...whatsOnlineActions,
+    ...hookActions,
     {
         triggers: ['say hello', 'hello'],
         help: 'I will say hello :)',
@@ -14,8 +16,7 @@ const actions = [
         triggers: ["who's your daddy", 'daddy'],
         handler: (bot, message) => bot.reply(message, `I was created by Simon Gausmann, he is a pretty cool guy... \n\n Maybe you want to add some stuff aswell? \n check out https://github.com/GauSim/slackbot`)
     }
-]
-
+] as { triggers: string[], help: string; handler: (bot, message) => void; }[];
 
 
 export function registerActions(controller) {
@@ -23,7 +24,6 @@ export function registerActions(controller) {
     actions.forEach(action => {
         controller.hears(action.triggers, ['direct_message', 'mention', 'direct_mention'], action.handler);
     });
-
 
     controller.hears(['help', 'info'], ['direct_message', 'mention', 'direct_mention'], (bot, message) => {
 

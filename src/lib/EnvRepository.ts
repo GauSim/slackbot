@@ -112,14 +112,25 @@ const Apps: { [AppName: string]: IApp } = {
             'PROD-QA-US': 'https://prod-qa-us.coresystems.net/portal/status',
             'SANDBOX': 'https://sb.dev.coresuite.com/portal/status'
         }
+    },
+
+    ANDROID: {
+        appShortName: 'ANDROID',
+        type: null,
+        envMap: {
+            ANDROID: null // place holder
+        }
     }
 }
-
+export interface IRequestOptions {
+    url: string;
+    headers?: { [h: string]: string }
+}
 export interface IEnv {
     env: string;
     appShortName: string;
-    versionFileUrl: string;
-    deploymentFileUrl: string | null;
+    versionInfo: IRequestOptions;
+    deploymentInfo: IRequestOptions | null;
 }
 
 export class EnvRepository {
@@ -131,7 +142,9 @@ export class EnvRepository {
             ...Object.keys(Apps.FACADE.envMap),
             ...Object.keys(Apps.DC.envMap),
             ...Object.keys(Apps.ADMIN.envMap),
-            ...Object.keys(Apps.DS.envMap)
+            ...Object.keys(Apps.DS.envMap),
+            ...Object.keys(Apps.ANDROID.envMap),
+            'mobile'
         ].forEach(env => {
             ALL_KNOWN_ENVIRONMENTS.indexOf(env) === -1
                 ? ALL_KNOWN_ENVIRONMENTS.push(env)
@@ -147,7 +160,8 @@ export class EnvRepository {
             'QT',
             'PT',
             'PROD',
-            'SANDBOX'
+            'SANDBOX',
+            Apps.ANDROID.appShortName,
         ].filter(e => this.ALL_KNOWN_ENVIRONMENTS.indexOf(e) !== -1);
 
 
@@ -168,7 +182,12 @@ export class EnvRepository {
                 Object.keys(FRONTEND_APPS).map(appShortName => {
                     const versionFileUrl = `${ENV_FRONTENDS[env]}/${FRONTEND_APPS[appShortName]}/${VERSION_FILE}`;
                     const deploymentFileUrl = `${ENV_FRONTENDS[env]}/${FRONTEND_APPS[appShortName]}/${DEPLOY_FILE}`;
-                    result.push({ env, appShortName, versionFileUrl, deploymentFileUrl })
+                    result.push({
+                        env,
+                        appShortName,
+                        versionInfo: { url: versionFileUrl },
+                        deploymentInfo: { url: deploymentFileUrl }
+                    })
                 });
 
             });
@@ -183,8 +202,8 @@ export class EnvRepository {
             .map(env => ({
                 env,
                 appShortName: it.appShortName,
-                versionFileUrl: it.envMap[env],
-                deploymentFileUrl: null,
+                versionInfo: { url: it.envMap[env] },
+                deploymentInfo: null,
             }));
     }
 
@@ -208,6 +227,70 @@ export class EnvRepository {
         return this.select(Apps.FACADE, envFilter);
     }
 
+    public static android(envFilter: EnvFilter): IEnv[] {
+
+
+        return (envFilter(Apps.ANDROID.appShortName) || envFilter('mobile'))
+            ? [
+                {
+                    env: Apps.ANDROID.appShortName,
+                    appShortName: 'nightly',
+                    versionInfo: {
+                        url: 'https://rink.hockeyapp.net/api/2/apps/#/app_versions/',
+                        headers: {
+                            'X-HockeyAppToken': '#'
+                        }
+                    },
+                    deploymentInfo: null,
+                },
+                {
+                    env: Apps.ANDROID.appShortName,
+                    appShortName: 'beta',
+                    versionInfo: {
+                        url: 'https://rink.hockeyapp.net/api/2/apps/#/app_versions/',
+                        headers: {
+                            'X-HockeyAppToken': '#'
+                        }
+                    },
+                    deploymentInfo: null,
+                },
+                {
+                    env: Apps.ANDROID.appShortName,
+                    appShortName: 'store',
+                    versionInfo: {
+                        url: 'https://rink.hockeyapp.net/api/2/apps/#/app_versions/',
+                        headers: {
+                            'X-HockeyAppToken': '#'
+                        }
+                    },
+                    deploymentInfo: null,
+                },
+                {
+                    env: Apps.ANDROID.appShortName,
+                    appShortName: 'mobile iron wrapped',
+                    versionInfo: {
+                        url: 'https://rink.hockeyapp.net/api/2/apps/#/app_versions/',
+                        headers: {
+                            'X-HockeyAppToken': '#'
+                        }
+                    },
+                    deploymentInfo: null,
+                },
+                {
+                    env: Apps.ANDROID.appShortName,
+                    appShortName: 'tosca',
+                    versionInfo: {
+                        url: 'https://rink.hockeyapp.net/api/2/apps/#/app_versions/',
+                        headers: {
+                            'X-HockeyAppToken': '#'
+                        }
+                    },
+                    deploymentInfo: null,
+                }
+            ]
+            : [];
+    }
+
     public static getEnvsFromTextInputString(envInputString: string) {
         return envInputString
             ? envInputString === 'ALL'
@@ -216,7 +299,7 @@ export class EnvRepository {
                     ? envInputString.split(',')
                     : envInputString.split(' '))
                     .map(it => it.trim())
-                    .filter(it => !!it && this.ALL_KNOWN_ENVIRONMENTS.indexOf(it) > -1)
+                    .filter(it => !!it && this.ALL_KNOWN_ENVIRONMENTS.map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1)
             : this.DEFAULT_ENVIRONMENTS;
     }
 }

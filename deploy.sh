@@ -5,6 +5,7 @@ gitRev="$(git rev-parse HEAD)";
 filename="slackbot#$gitRev@$timestamp.zip";
 
 
+
 echo "clean all node modules";
 #rm -rf node_modules;
 
@@ -13,6 +14,9 @@ rm *.zip;
 
 echo "install dependency";
 npm install;
+
+echo "build";
+npm run build;
 
 echo "creat zip file artefact ($filename)";
 zip -r $filename *;

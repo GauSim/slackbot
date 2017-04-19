@@ -4,7 +4,7 @@ import moment = require('moment-timezone');
 interface IFromatParams {
     env: string;
     appShortName: string;
-    versionFileUrl: string;
+    versionInfo: { url: string };
     version: string;
     lastCommit: string;
     buildTimestamp: string | moment.Moment;
@@ -59,7 +59,7 @@ export class Format {
 
     public mixinResultLine(response: IFromatParams): IEnvResponse {
 
-        const { lastCommit, buildTimestamp, lastModifiedTimestamp, deployedTimestamp, env, versionFileUrl, appShortName, version } = response;
+        const { lastCommit, buildTimestamp, lastModifiedTimestamp, deployedTimestamp, env, versionInfo, appShortName, version } = response;
 
         const commitStr = this.commit(lastCommit);
         const buildStr = this.date('[build]', buildTimestamp);
@@ -77,7 +77,7 @@ export class Format {
             .join(' ');
 
 
-        const resultLine = ("`" + env + "`") + ` | <${versionFileUrl}|${appShortName.toUpperCase()}> → ${pretty}`;
+        const resultLine = ("`" + env + "`") + ` | <${versionInfo.url}|${appShortName.toUpperCase()}> → ${pretty}`;
 
         return Object.assign({}, response, { resultLine, hasError: false });
     }
