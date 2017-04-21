@@ -57,7 +57,7 @@ export default class BaseStorage implements IBaseStorage {
 
     this.delete = k => _client.setAsync(k, EMPTY_BLOB);
 
-    this.all = (partial = null) => this.keys()
+    this.all = (partial: string | null = null) => this.keys()
       .then(keys => {
         const work = keys
           .filter(key => (partial === null) || key.indexOf(partial) > -1) // select partition
@@ -98,7 +98,7 @@ export default class BaseStorage implements IBaseStorage {
       return _client.keysAsync(key);
     }
 
-    this.clearAll = (partial = null) => this.keys()
+    this.clearAll = (partial: string | null = null) => this.keys()
       .then(keys => Promise.all(keys
         .filter(key => (partial === null) || key.indexOf(partial) > -1)
         .map(key => this.delete(key))));

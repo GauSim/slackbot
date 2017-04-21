@@ -5,11 +5,11 @@ interface IFromatParams {
     env: string;
     appShortName: string;
     versionInfo: { url: string };
-    version: string;
-    lastCommit: string;
-    buildTimestamp: string | moment.Moment;
-    lastModifiedTimestamp: string | moment.Moment;
-    deployedTimestamp: string | moment.Moment
+    version: string | null;
+    lastCommit: string | null;
+    buildTimestamp: null | string | moment.Moment;
+    lastModifiedTimestamp: null | string | moment.Moment;
+    deployedTimestamp: null | string | moment.Moment
 }
 
 export interface IEnvResponse extends IFromatParams {
@@ -21,10 +21,10 @@ export class Format {
 
     public UNKNOWN = 'UNKNOWN';
 
-    public date(verb: string, stamp?: string | moment.Moment): string {
+    public date(verb: string, stamp?: null | string | moment.Moment): string {
         if (!stamp || stamp === this.UNKNOWN) return '';
 
-        let stampAsMoment: moment.Moment = null;
+        let stampAsMoment: moment.Moment | null = null;
 
         if (moment.isMoment(stamp)) {
 
@@ -50,7 +50,7 @@ export class Format {
         return `${verb}: ${dateString}`;
     }
 
-    public commit(commit?: string) {
+    public commit(commit: string | null) {
         if (!commit || commit === this.UNKNOWN) return '';
 
         return `(<https://github.com/coresystemsFSM/portal/commits/${commit}|${commit.substr(0, 5) + '...'}>)`;
@@ -73,7 +73,7 @@ export class Format {
             buildStr,
             deployedStr
         ]
-            .filter(x => x !== '')
+            .filter(x => !!x && x !== '')
             .join(' ');
 
 

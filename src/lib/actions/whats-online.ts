@@ -4,7 +4,7 @@ import moment = require('moment-timezone');
 
 import * as fun from './fun';
 import { Format, IEnvResponse } from '../Format';
-import { EnvRepository, IEnv } from '../EnvRepository';
+import { Repository, IEnv } from '../env/Repository';
 
 const NO_VERSION_NUMBER_FOUND = 'no version number found';
 
@@ -51,14 +51,20 @@ class WhatsOnline {
     }
 
     fromWebapp({ env, appShortName, versionInfo, deploymentInfo }: IEnv) {
+
+        const noStamp = { timestamp: null };
+        const asyncDeploymentInfo: Promise<{ timestamp: null | string }> = deploymentInfo
+            ? this.get(deploymentInfo)
+                .then(jsonString => JSON.parse(jsonString))
+                .catch(e => noStamp) // catch 404, and redirects etc.
+            : Promise.resolve(noStamp)
+
         return Promise
             .all([
                 this.get(versionInfo),
-                this.get(deploymentInfo)
-                    .then(jsonString => JSON.parse(jsonString))
-                    .catch(e => ({ timestamp: null })) // catch 404, and redirects etc.
+                asyncDeploymentInfo
             ])
-            .then(([versionFile, deploymentFileJson]) => {
+            .then(([versionFile, { timestamp }]) => {
 
                 const json = JSON.parse(versionFile) as { lastCommit: string; buildTimestamp: string; appConfig: { version: string; } };
 
@@ -69,7 +75,7 @@ class WhatsOnline {
                     version: json.appConfig.version,
                     lastCommit: json.lastCommit,
                     buildTimestamp: json.buildTimestamp,
-                    deployedTimestamp: (deploymentFileJson as any as { timestamp: string }).timestamp,
+                    deployedTimestamp: timestamp,
                     lastModifiedTimestamp: null, // headers["last-modified"],
                 });
             })
@@ -80,12 +86,15 @@ class WhatsOnline {
         return this.get(versionInfo)
             .then(rawBody => {
 
-                let version = null;
+                let version = null as null | string;
                 const exp = new RegExp(/([0-9][0-9]?\.[0-9][0-9]?\.[0-9][0-9]?\.[0-9][0-9]?[0-9]?)/);
-                if (exp.test(rawBody))
-                    version = exp.exec(rawBody)[0];
+                if (exp.test(rawBody)) {
+                    const matches = exp.exec(rawBody);
+                    version = matches && matches[0] ? matches[0] : version;
+                }
 
-                let buildTimestamp = null;
+
+                let buildTimestamp = null as null | moment.Moment;
                 if (version) {
                     buildTimestamp = moment(
                         rawBody
@@ -148,17 +157,19 @@ class WhatsOnline {
 
                 const it = json.app_versions[0];
 
-                let lastCommit = null;
+                let lastCommit = null as string | null;
                 const exp = new RegExp(/\b([a-f0-9]{40})\b/);
-                if (exp.test(it.notes))
-                    lastCommit = exp.exec(it.notes)[0];
+                if (exp.test(it.notes)) {
+                    const matches = exp.exec(it.notes);
+                    lastCommit = matches && matches[0] ? matches[0] : lastCommit;
+                }
 
                 return this.format.mixinResultLine({
                     env,
                     appShortName,
+                    lastCommit,
                     versionInfo: { url: it.download_url },
                     version: it.shortversion,
-                    lastCommit: null,
                     buildTimestamp: null,
                     deployedTimestamp: it.updated_at,
                     lastModifiedTimestamp: null,
@@ -174,25 +185,25 @@ class WhatsOnline {
         }
 
         return [
-            ...EnvRepository.webApps(envFilter)
+            ...Repository.webApps(envFilter)
                 .map(it => this.fromWebapp(it)),
 
-            ...EnvRepository.dc(envFilter)
+            ...Repository.dc(envFilter)
                 .map(it => this.fromCloud(it)),
 
-            ...EnvRepository.mc(envFilter)
+            ...Repository.mc(envFilter)
                 .map(it => this.fromCloud(it)),
 
-            ...EnvRepository.admin(envFilter)
+            ...Repository.admin(envFilter)
                 .map(it => this.fromCloud(it)),
 
-            ...EnvRepository.ds(envFilter)
+            ...Repository.ds(envFilter)
                 .map(it => this.fromCloud(it)),
 
-            ...EnvRepository.facade(envFilter)
+            ...Repository.facade(envFilter)
                 .map(it => this.fromFacade(it)),
 
-            ...EnvRepository.android(envFilter)
+            ...Repository.android(envFilter)
                 .map(it => this.fromHockeyApp(it))
 
         ] as Promise<IEnvResponse>[];
@@ -214,7 +225,7 @@ const actions = [
             "what's online",
             'v '
         ],
-        help: `i will check each environment and tell you what version is deployed, you can also check for a specific env => ${EnvRepository.DEFAULT_ENVIRONMENTS.map(e => "`" + e + "`").join(', ')}`,
+        help: `i will check each environment and tell you what version is deployed, you can also check for a specific env => ${Repository.DEFAULT_ENVIRONMENTS.map(e => "`" + e + "`").join(', ')}`,
         handler: (bot, message) => {
 
 
@@ -225,10 +236,10 @@ const actions = [
                 .trim()
                 .toUpperCase();
 
-            let envToCheck = EnvRepository.getEnvsFromTextInputString(envInputString);
+            let envToCheck = Repository.getEnvsFromTextInputString(envInputString);
 
             if (!envToCheck.length) {
-                bot.reply(message, `mhm? unknown environment ... \n try without a specific env or some of ${EnvRepository.DEFAULT_ENVIRONMENTS.map(e => "`" + e + "`").join(', ')}`);
+                bot.reply(message, `mhm? unknown environment ... \n try without a specific env or some of ${Repository.DEFAULT_ENVIRONMENTS.map(e => "`" + e + "`").join(', ')}`);
                 return;
             }
 
@@ -263,10 +274,10 @@ const actions = [
                 .trim()
                 .toUpperCase();
 
-            let envToCheck = EnvRepository.getEnvsFromTextInputString(envInputString);
+            let envToCheck = Repository.getEnvsFromTextInputString(envInputString);
 
             if (!envToCheck.length) {
-                bot.reply(message, `mhm? unknown environment ... \n try without a specific env or some of ${EnvRepository.DEFAULT_ENVIRONMENTS.map(e => "`" + e + "`").join(', ')}`);
+                bot.reply(message, `mhm? unknown environment ... \n try without a specific env or some of ${Repository.DEFAULT_ENVIRONMENTS.map(e => "`" + e + "`").join(', ')}`);
                 return;
             }
 
