@@ -39,6 +39,7 @@ class WhatsOnline {
                 versionInfo,
                 version: null,
                 lastCommit: null,
+                githubRepoUrl: null,
                 buildTimestamp: null,
                 deployedTimestamp: null,
                 lastModifiedTimestamp: null,
@@ -50,31 +51,30 @@ class WhatsOnline {
         }
     }
 
-    fromWebapp({ env, appShortName, versionInfo, deploymentInfo }: IEnv) {
+    fromWebapp({ env, appShortName, versionInfo, deploymentInfo, githubRepoUrl }: IEnv) {
 
         const noStamp = { timestamp: null };
         const asyncDeploymentInfo: Promise<{ timestamp: null | string }> = deploymentInfo
             ? this.get(deploymentInfo)
                 .then(jsonString => JSON.parse(jsonString))
-                .catch(e => noStamp) // catch 404, and redirects etc.
+                .catch(e => noStamp) // catch 404, and redirects on deploy file.
             : Promise.resolve(noStamp)
 
         return Promise
             .all([
-                this.get(versionInfo),
+                this.get(versionInfo)
+                    .then(it => JSON.parse(it) as { lastCommit: string; buildTimestamp: string; appConfig: { version: string; } }),
                 asyncDeploymentInfo
             ])
-            .then(([versionFile, { timestamp }]) => {
-
-                const json = JSON.parse(versionFile) as { lastCommit: string; buildTimestamp: string; appConfig: { version: string; } };
-
+            .then(([{lastCommit, buildTimestamp, appConfig}, { timestamp }]) => {
                 return this.format.mixinResultLine({
                     env,
                     appShortName,
                     versionInfo,
-                    version: json.appConfig.version,
-                    lastCommit: json.lastCommit,
-                    buildTimestamp: json.buildTimestamp,
+                    githubRepoUrl,
+                    lastCommit,
+                    buildTimestamp,
+                    version: appConfig.version,
                     deployedTimestamp: timestamp,
                     lastModifiedTimestamp: null, // headers["last-modified"],
                 });
@@ -82,7 +82,7 @@ class WhatsOnline {
             .catch(error => this.catchError(error, env, appShortName, versionInfo));
     }
 
-    fromCloud({ env, appShortName, versionInfo, deploymentInfo }: IEnv) {
+    fromCloud({ env, appShortName, versionInfo, deploymentInfo, githubRepoUrl }: IEnv) {
         return this.get(versionInfo)
             .then(rawBody => {
 
@@ -111,6 +111,7 @@ class WhatsOnline {
                     env,
                     appShortName,
                     versionInfo,
+                    githubRepoUrl,
                     version: version,
                     lastCommit: null,
                     buildTimestamp: buildTimestamp,
@@ -121,28 +122,26 @@ class WhatsOnline {
             .catch(error => this.catchError(error, env, appShortName, versionInfo));
     }
 
-    fromFacade({ env, appShortName, versionInfo, deploymentInfo }: IEnv) {
+    fromFacade({ env, appShortName, versionInfo, deploymentInfo, githubRepoUrl }: IEnv) {
         return this.get(versionInfo)
-            .then(rawBody => {
-
-                const json = JSON.parse(rawBody) as { lastCommit: string; buildTimestamp: string; deployTimestamp: string, version: string };
-
+            .then(rawBody => JSON.parse(rawBody) as { lastCommit: string; buildTimestamp: string; deployTimestamp: string, version: string })
+            .then(({ lastCommit, version, buildTimestamp, deployTimestamp }) => {
                 return this.format.mixinResultLine({
                     env,
                     appShortName,
                     versionInfo,
-                    version: json.version,
-                    lastCommit: json.lastCommit,
-                    buildTimestamp: json.buildTimestamp,
-                    deployedTimestamp: json.deployTimestamp,
+                    githubRepoUrl,
+                    version,
+                    lastCommit,
+                    buildTimestamp,
+                    deployedTimestamp: deployTimestamp,
                     lastModifiedTimestamp: null,
                 });
             })
             .catch(error => this.catchError(error, env, appShortName, versionInfo));
     }
 
-    fromHockeyApp({ env, appShortName, versionInfo, deploymentInfo }: IEnv) {
-        // X-HockeyAppToken: eeec0fba65114c61aeb14afb46f42522" 
+    fromHockeyApp({ env, appShortName, versionInfo, deploymentInfo, githubRepoUrl }: IEnv) {
         return this.get(versionInfo)
             .then(rawBody => {
 
@@ -168,6 +167,7 @@ class WhatsOnline {
                     env,
                     appShortName,
                     lastCommit,
+                    githubRepoUrl,
                     versionInfo: { url: it.download_url },
                     version: it.shortversion,
                     buildTimestamp: null,
@@ -185,7 +185,13 @@ class WhatsOnline {
         }
 
         return [
-            ...Repository.webApps(envFilter)
+            ...Repository.fsm(envFilter)
+                .map(it => this.fromWebapp(it)),
+
+            ...Repository.facade(envFilter)
+                .map(it => this.fromFacade(it)),
+
+            ...Repository.now(envFilter)
                 .map(it => this.fromWebapp(it)),
 
             ...Repository.dc(envFilter)
@@ -199,9 +205,6 @@ class WhatsOnline {
 
             ...Repository.ds(envFilter)
                 .map(it => this.fromCloud(it)),
-
-            ...Repository.facade(envFilter)
-                .map(it => this.fromFacade(it)),
 
             ...Repository.android(envFilter)
                 .map(it => this.fromHockeyApp(it))
@@ -313,7 +316,7 @@ const actions = [
                         : (grpByAppHash as any)
                             .map((list: IEnvResponse[]) => {
                                 const versionStr = list[0].lastCommit
-                                    ? list[0].version + '' + new Format().commit(list[0].lastCommit)
+                                    ? list[0].version + '' + new Format().commit(list[0].githubRepoUrl, list[0].lastCommit)
                                     : list[0].version
 
                                 return `${list[0].appShortName} | ${versionStr} → ` + list.map(it => '`' + it.env + '`').join(' == ');

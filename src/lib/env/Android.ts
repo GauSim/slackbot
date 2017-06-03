@@ -38,6 +38,7 @@ export class Android {
         return {
             appShortName,
             env: Android.ENV_NAME,
+            githubRepoUrl: 'https://github.com/coresystemsFSM/android-coresuite',
             versionInfo: {
                 url: `https://rink.hockeyapp.net/api/2/apps/${appId}/app_versions/`,
                 headers: {

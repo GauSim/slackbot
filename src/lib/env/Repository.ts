@@ -2,15 +2,28 @@ import { Android } from './Android';
 import Config from '../config';
 type EnvFilter = (env: string) => boolean;
 
-
 interface IApp {
     appShortName: string;
+    githubRepoUrl: string;
     type: string | null;
     envMap: { [envName: string]: string }
 };
 
 
-const FRONTEND_APPS = {
+export interface IRequestOptions {
+    url: string;
+    headers?: { [h: string]: string }
+}
+
+export interface IEnv {
+    env: string;
+    appShortName: string;
+    versionInfo: IRequestOptions;
+    deploymentInfo: IRequestOptions | null;
+    githubRepoUrl: string;
+}
+
+const FSM_WEB_APPS = {
     'WFM': 'workforce-management',
     'AR': 'analytics-reporting',
     'MDM': 'master-data-management',
@@ -21,8 +34,9 @@ const FRONTEND_APPS = {
     'CO': 'configuration',
     'MAP': 'map'
 }
+const FSM_GITHUB_REPO_URL = 'https://github.com/coresystemsFSM/portal';
 
-const ENV_FRONTENDS = {
+const ENV_FSM_WEB_SERVERS = {
     'ET': 'https://et.coresystems.net',
     'QT': 'https://qt.coresystems.net',
     'PT': 'https://pt.coresystems.net',
@@ -37,8 +51,21 @@ const ENV_FRONTENDS = {
     'PROD-QA-US': 'https://prod-qa-us.coresystems.net'
 }
 
+
+const NOW: IApp = {
+    appShortName: 'Now',
+    githubRepoUrl: 'https://github.com/coresystemsFSM/now',
+    type: null,
+    envMap: {
+        'ET': 'https://et.now.gl/appconfig.json',
+        'QT': 'https://qt.now.gl/appconfig.json',
+        'PROD': 'https://now.gl/appconfig.json'
+    }
+}
+
 const ADMIN: IApp = {
     appShortName: 'Admin',
+    githubRepoUrl: 'https://github.com/coresystemsFSM/admin',
     type: null,
     envMap: {
         'ET': 'https://et.coresystems.net/admin/status',
@@ -55,6 +82,7 @@ const ADMIN: IApp = {
 };
 const DC: IApp = {
     appShortName: 'DC',
+    githubRepoUrl: 'https://github.com/coresystemsFSM/cloud',
     type: null,
     envMap: {
         'ET': 'https://et.dev.coresuite.com/dc/status',
@@ -72,6 +100,7 @@ const DC: IApp = {
 
 const MC: IApp = {
     appShortName: 'MC',
+    githubRepoUrl: 'https://github.com/coresystemsFSM/cloud',
     type: null,
     envMap: {
         'ET': 'https://et.dev.coresuite.com/mc/status',
@@ -89,6 +118,7 @@ const MC: IApp = {
 
 const DS: IApp = {
     appShortName: 'DS',
+    githubRepoUrl: 'https://github.com/coresystemsFSM/cloud',
     type: null,
     envMap: {
         'PROD': 'https://ds.coresuite.com/ds/status',
@@ -98,6 +128,7 @@ const DS: IApp = {
 
 const FACADE: IApp = {
     appShortName: 'FACADE',
+    githubRepoUrl: FSM_GITHUB_REPO_URL,
     type: null,
     envMap: {
         'ET': 'https://et.dev.coresuite.com/portal/status',
@@ -114,18 +145,6 @@ const FACADE: IApp = {
         'SANDBOX': 'https://sb.dev.coresuite.com/portal/status'
     }
 }
-export interface IRequestOptions {
-    url: string;
-    headers?: { [h: string]: string }
-}
-export interface IEnv {
-    env: string;
-    appShortName: string;
-    versionInfo: IRequestOptions;
-    deploymentInfo: IRequestOptions | null;
-}
-
-
 
 
 export class Repository {
@@ -133,7 +152,7 @@ export class Repository {
     public static get ALL_KNOWN_ENVIRONMENTS(): string[] {
         const ALL_KNOWN_ENVIRONMENTS = [];
         [
-            ...Object.keys(ENV_FRONTENDS),
+            ...Object.keys(ENV_FSM_WEB_SERVERS),
             ...Object.keys(FACADE.envMap),
             ...Object.keys(DC.envMap),
             ...Object.keys(ADMIN.envMap),
@@ -163,30 +182,30 @@ export class Repository {
         return DEFAULT_ENVIRONMENTS;
     };
 
-    public static webApps(envFilter: EnvFilter): IEnv[] {
+    public static fsm(envFilter: EnvFilter): IEnv[] {
 
         const VERSION_FILE = 'appconfig.json';
         const DEPLOY_FILE = 'deployed.json';
 
         const result = [] as IEnv[];
 
-        Object.keys(ENV_FRONTENDS)
+        Object.keys(ENV_FSM_WEB_SERVERS)
             .filter(envFilter)
             .map(env => {
 
-                Object.keys(FRONTEND_APPS).map(appShortName => {
-                    const versionFileUrl = `${ENV_FRONTENDS[env]}/${FRONTEND_APPS[appShortName]}/${VERSION_FILE}`;
-                    const deploymentFileUrl = `${ENV_FRONTENDS[env]}/${FRONTEND_APPS[appShortName]}/${DEPLOY_FILE}`;
+                Object.keys(FSM_WEB_APPS).map(appShortName => {
+                    const versionFileUrl = `${ENV_FSM_WEB_SERVERS[env]}/${FSM_WEB_APPS[appShortName]}/${VERSION_FILE}`;
+                    const deploymentFileUrl = `${ENV_FSM_WEB_SERVERS[env]}/${FSM_WEB_APPS[appShortName]}/${DEPLOY_FILE}`;
                     result.push({
                         env,
                         appShortName,
                         versionInfo: { url: versionFileUrl },
-                        deploymentInfo: { url: deploymentFileUrl }
+                        deploymentInfo: { url: deploymentFileUrl },
+                        githubRepoUrl: FSM_GITHUB_REPO_URL
                     })
                 });
 
             });
-
         return result;
     }
 
@@ -197,9 +216,14 @@ export class Repository {
             .map(env => ({
                 env,
                 appShortName: it.appShortName,
+                githubRepoUrl: it.githubRepoUrl,
                 versionInfo: { url: it.envMap[env] },
-                deploymentInfo: null,
+                deploymentInfo: null
             }));
+    }
+
+    public static now(envFilter: EnvFilter): IEnv[] {
+        return this.select(NOW, envFilter);
     }
 
     public static mc(envFilter: EnvFilter): IEnv[] {

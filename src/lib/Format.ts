@@ -7,9 +7,10 @@ interface IFromatParams {
     versionInfo: { url: string };
     version: string | null;
     lastCommit: string | null;
+    githubRepoUrl:string | null;
     buildTimestamp: null | string | moment.Moment;
     lastModifiedTimestamp: null | string | moment.Moment;
-    deployedTimestamp: null | string | moment.Moment
+    deployedTimestamp: null | string | moment.Moment;
 }
 
 export interface IEnvResponse extends IFromatParams {
@@ -50,18 +51,19 @@ export class Format {
         return `${verb}: ${dateString}`;
     }
 
-    public commit(commit: string | null) {
+    public commit(githubRepoUrl: string | null, commit: string | null) {
         if (!commit || commit === this.UNKNOWN) return '';
-
-        return `(<https://github.com/coresystemsFSM/portal/commits/${commit}|${commit.substr(0, 5) + '...'}>)`;
+        return githubRepoUrl
+            ? `(<${githubRepoUrl}/commits/${commit}|${commit.substr(0, 5) + '...'}>)`
+            : commit.substr(0, 5) + '...';
     }
 
 
     public mixinResultLine(response: IFromatParams): IEnvResponse {
 
-        const { lastCommit, buildTimestamp, lastModifiedTimestamp, deployedTimestamp, env, versionInfo, appShortName, version } = response;
+        const { lastCommit,githubRepoUrl,  buildTimestamp, lastModifiedTimestamp, deployedTimestamp, env, versionInfo, appShortName, version } = response;
 
-        const commitStr = this.commit(lastCommit);
+        const commitStr = this.commit(githubRepoUrl, lastCommit);
         const buildStr = this.date('[build]', buildTimestamp);
         const lastModifiedStr = this.date('[last-modified]', lastModifiedTimestamp);
         const deployedStr = this.date('[deployed]', deployedTimestamp);
