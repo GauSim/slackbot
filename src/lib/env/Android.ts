@@ -1,7 +1,13 @@
 import { IEnv } from './Repository'
 import { Config } from '../config';
+import { Maybe } from "../models/Maybe";
 
-type androidVersion = 'nightly' | 'beta' | 'store' | 'iron' | 'tosca';
+export type androidVersion = 'nightly'
+    | 'beta'
+    | 'store'
+    | 'iron'
+    | 'tosca';
+
 type androidSecret = [string | null, string | null];  // tuple of appKey,ApiToken
 
 
@@ -30,8 +36,9 @@ export class Android {
 
         return (androidSecretMap[version] || [null, null]) as androidSecret;
     }
-    public static getEnv(config: Config, appShortName: androidVersion): IEnv | null {
-        const [appId, token] = this.getSecret(config, appShortName);
+    public static getEnv(config: Config, appShortName: androidVersion): Maybe<IEnv> {
+       return null;
+       /* const [appId, token] = this.getSecret(config, appShortName);
         if (!appId || !token) {
             return null
         }
@@ -47,5 +54,6 @@ export class Android {
             },
             deploymentInfo: null,
         }
+        */
     }
 }

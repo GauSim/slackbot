@@ -5,8 +5,10 @@ import moment = require('moment-timezone');
 import * as fun from './fun';
 import { Format, IEnvResponse } from '../Format';
 import { Repository, IEnv } from '../env/Repository';
+import { Maybe } from "../models/Maybe";
 
 const NO_VERSION_NUMBER_FOUND = 'no version number found';
+
 
 
 class WhatsOnline {
@@ -20,8 +22,6 @@ class WhatsOnline {
 
         this.get = (opt: { url: string }) => {
             console.log(`GET | ${opt.url}`);
-
-
             return (_request as (o) => Promise<string>)(opt)
                 .then(response => {
                     console.log(`DONE | ${opt.url}`);
@@ -52,33 +52,26 @@ class WhatsOnline {
     }
 
     fromWebapp({ env, appShortName, versionInfo, deploymentInfo, githubRepoUrl }: IEnv) {
-
-        const noStamp = { timestamp: null };
-        const asyncDeploymentInfo: Promise<{ timestamp: null | string }> = deploymentInfo
-            ? this.get(deploymentInfo)
-                .then(jsonString => JSON.parse(jsonString))
-                .catch(e => noStamp) // catch 404, and redirects on deploy file.
-            : Promise.resolve(noStamp)
-
         return Promise
             .all([
                 this.get(versionInfo)
                     .then(it => JSON.parse(it) as { lastCommit: string; buildTimestamp: string; appConfig: { version: string; } }),
-                asyncDeploymentInfo
+                (deploymentInfo
+                    ? this.get(deploymentInfo).then(it => JSON.parse(it))
+                        .catch(error => ({ timestamp: null })) // catch 404, and redirects on deploy file.
+                    : Promise.resolve(({ timestamp: null }))) as Promise<{ timestamp: null | string }>
             ])
-            .then(([{lastCommit, buildTimestamp, appConfig}, { timestamp }]) => {
-                return this.format.mixinResultLine({
-                    env,
-                    appShortName,
-                    versionInfo,
-                    githubRepoUrl,
-                    lastCommit,
-                    buildTimestamp,
-                    version: appConfig.version,
-                    deployedTimestamp: timestamp,
-                    lastModifiedTimestamp: null, // headers["last-modified"],
-                });
-            })
+            .then(([{ lastCommit, buildTimestamp, appConfig }, { timestamp }]) => this.format.mixinResultLine({
+                env,
+                appShortName,
+                versionInfo,
+                githubRepoUrl,
+                lastCommit,
+                buildTimestamp,
+                version: appConfig.version,
+                deployedTimestamp: timestamp,
+                lastModifiedTimestamp: null, // headers["last-modified"],
+            }))
             .catch(error => this.catchError(error, env, appShortName, versionInfo));
     }
 
@@ -125,19 +118,17 @@ class WhatsOnline {
     fromFacade({ env, appShortName, versionInfo, deploymentInfo, githubRepoUrl }: IEnv) {
         return this.get(versionInfo)
             .then(rawBody => JSON.parse(rawBody) as { lastCommit: string; buildTimestamp: string; deployTimestamp: string, version: string })
-            .then(({ lastCommit, version, buildTimestamp, deployTimestamp }) => {
-                return this.format.mixinResultLine({
-                    env,
-                    appShortName,
-                    versionInfo,
-                    githubRepoUrl,
-                    version,
-                    lastCommit,
-                    buildTimestamp,
-                    deployedTimestamp: deployTimestamp,
-                    lastModifiedTimestamp: null,
-                });
-            })
+            .then(({ lastCommit, version, buildTimestamp, deployTimestamp }) => this.format.mixinResultLine({
+                env,
+                appShortName,
+                versionInfo,
+                githubRepoUrl,
+                version,
+                lastCommit,
+                buildTimestamp,
+                deployedTimestamp: deployTimestamp,
+                lastModifiedTimestamp: null,
+            }))
             .catch(error => this.catchError(error, env, appShortName, versionInfo));
     }
 
@@ -145,18 +136,17 @@ class WhatsOnline {
         return this.get(versionInfo)
             .then(rawBody => {
 
-                const json = JSON.parse(rawBody) as {
+                const [it] = (JSON.parse(rawBody) as {
                     app_versions: {
                         download_url: string;
                         shortversion: string;
                         updated_at: string;
                         notes: string;
                     }[], status: 'success'
-                };
+                }).app_versions;
 
-                const it = json.app_versions[0];
+                let lastCommit = null as Maybe<string>;
 
-                let lastCommit = null as string | null;
                 const exp = new RegExp(/\b([a-f0-9]{40})\b/);
                 if (exp.test(it.notes)) {
                     const matches = exp.exec(it.notes);
@@ -179,10 +169,10 @@ class WhatsOnline {
     }
 
     getUrls(envToCheck: string[] = []) {
-        const envFilter = (env: string) => {
-            return envToCheck.length === 0
-                || envToCheck.map(e => e.toLowerCase()).indexOf(env.toLowerCase()) > -1;
-        }
+        const envFilter = (env: string) =>
+            envToCheck.length === 0
+            || envToCheck.map(e => e.toLowerCase()).indexOf(env.toLowerCase()) > -1;
+
 
         return [
             ...Repository.fsm(envFilter)
@@ -211,6 +201,7 @@ class WhatsOnline {
 
         ] as Promise<IEnvResponse>[];
     }
+
 
     check(work: Promise<IEnvResponse>[]) {
         const start = moment(new Date());
@@ -253,9 +244,7 @@ const actions = [
             bot.reply(message, `i'll check ${envToCheck.map(e => "`" + e.toUpperCase() + "`").join(', ')} on ${work.length} servers ...`);
 
             whatsOnline.check(work)
-                .then(replyText => {
-                    bot.reply(message, replyText);
-                })
+                .then(replyText => bot.reply(message, replyText))
                 .catch(error => {
                     console.error(error);
                     bot.reply(message, `something went wront... ${JSON.stringify(error)}`);

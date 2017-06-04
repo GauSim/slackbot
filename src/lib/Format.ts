@@ -1,16 +1,17 @@
 import moment = require('moment-timezone');
+import { Maybe } from "./models/Maybe";
 
 
 interface IFromatParams {
     env: string;
     appShortName: string;
     versionInfo: { url: string };
-    version: string | null;
-    lastCommit: string | null;
-    githubRepoUrl:string | null;
-    buildTimestamp: null | string | moment.Moment;
-    lastModifiedTimestamp: null | string | moment.Moment;
-    deployedTimestamp: null | string | moment.Moment;
+    version: Maybe<string>;
+    lastCommit: Maybe<string>;
+    githubRepoUrl: Maybe<string>;
+    buildTimestamp: Maybe<string | moment.Moment>;
+    lastModifiedTimestamp: Maybe<string | moment.Moment>;
+    deployedTimestamp: Maybe<string | moment.Moment>;
 }
 
 export interface IEnvResponse extends IFromatParams {
@@ -51,7 +52,7 @@ export class Format {
         return `${verb}: ${dateString}`;
     }
 
-    public commit(githubRepoUrl: string | null, commit: string | null) {
+    public commit(githubRepoUrl: Maybe<string>, commit: Maybe<string>) {
         if (!commit || commit === this.UNKNOWN) return '';
         return githubRepoUrl
             ? `(<${githubRepoUrl}/commits/${commit}|${commit.substr(0, 5) + '...'}>)`
@@ -61,7 +62,7 @@ export class Format {
 
     public mixinResultLine(response: IFromatParams): IEnvResponse {
 
-        const { lastCommit,githubRepoUrl,  buildTimestamp, lastModifiedTimestamp, deployedTimestamp, env, versionInfo, appShortName, version } = response;
+        const { lastCommit, githubRepoUrl, buildTimestamp, lastModifiedTimestamp, deployedTimestamp, env, versionInfo, appShortName, version } = response;
 
         const commitStr = this.commit(githubRepoUrl, lastCommit);
         const buildStr = this.date('[build]', buildTimestamp);
