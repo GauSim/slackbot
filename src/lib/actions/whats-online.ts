@@ -40,23 +40,20 @@ class WhatsOnline {
         }
     }
 
-    private catchError(error: Error | string, envInst: Environment): IEnvResponse {
-        const appShortName = envInst.app.appShortName;
-        const env = envInst.env;
-        const versionInfo = envInst.app.getVersionInfo(env);
-
+    private catchError(error: Error | string, { env, app }: Environment): IEnvResponse {
+        const [envName, url] = env;
         if (this.doNotThrow) {
-            console.log({ error, env: envInst.env, appShortName });
+            console.log({ error, envName, app: app.appShortName, url });
             return {
-                env: envInst.env,
-                appShortName,
+                env,
+                appShortName: app.appShortName,
                 version: null,
                 lastCommit: null,
                 githubRepoUrl: null,
                 buildTimestamp: null,
                 deployedTimestamp: null,
                 lastModifiedTimestamp: null,
-                resultLine: ("`" + env + "`") + ` | <${versionInfo ? versionInfo.url : ''}|${appShortName}> → looks offline`,
+                resultLine: ("`" + envName + "`") + ` | <${url}|${app.appShortName}> → looks offline`,
                 hasError: true
             }
         } else {
@@ -65,7 +62,13 @@ class WhatsOnline {
     }
 
     getWork(toCheck: string[] = []): Promise<IEnvResponse>[] {
-        return Repository.filter((env: string) => toCheck.length === 0 || toCheck.map(e => e.toLowerCase()).indexOf(env.toLowerCase()) > -1)
+        return Repository
+            .filter(({ env, app }) => {
+                const [envName, url] = env;
+                return toCheck.length === 0
+                    || !!envName && toCheck.map(e => e.toLowerCase()).indexOf(envName.toLowerCase()) > -1 // by envName
+                    || toCheck.map(e => e.toLowerCase()).indexOf(app.appShortName.toLowerCase()) > -1 // by appName
+            })
             .map(it => it.getStatus(this._get, this._format)
                 .catch(error => this.catchError(error, it)));
     }
@@ -88,16 +91,16 @@ const actions = [
             'version ',
             'v '
         ],
-        help: `i will check each environment and tell you what version is deployed, you can also check for a specific env => ${Repository.getEnvs().map(e => "`" + e + "`").join(', ')}`,
+        help: `i will check each env/app and tell you what version is deployed, you can also check for a specific env => ${Repository.matchEnvOrApp().map(e => "`" + e + "`").join(', ')}`,
         handler: (bot, message: IMessage) => {
 
 
             fun.getRandomMsg(funnyStuff => bot.reply(message, funnyStuff));
 
             const whatsOnline = new WhatsOnline(request, new Format());
-            const toCheck = Repository.getEnvs(removeMatch(message));
+            const toCheck = Repository.matchEnvOrApp(removeMatch(message));
             if (!toCheck.length) {
-                bot.reply(message, `mhm? unknown environment ... \n try without a specific env or some of ${Repository.getEnvs().map(e => "`" + e + "`").join(', ')}`);
+                bot.reply(message, `mhm? unknown... \n try without a specific env/app or some of ${Repository.matchEnvOrApp().map(e => "`" + e + "`").join(', ')}`);
                 return;
             }
 
@@ -118,16 +121,16 @@ const actions = [
             'diff ',
             'd '
         ],
-        help: `ill try to get a diff of the env's`,
+        help: `ill try to get a diff of the env/app's like ${Repository.matchEnvOrApp().map(e => "`" + e + "`").join(', ')}`,
         handler: (bot, message: IMessage) => {
 
             fun.getRandomMsg(funnyStuff => bot.reply(message, funnyStuff));
 
             const whatsOnline = new WhatsOnline(request, new Format());
 
-            const toCheck = Repository.getEnvs(removeMatch(message));
+            const toCheck = Repository.matchEnvOrApp(removeMatch(message));
             if (!toCheck.length) {
-                bot.reply(message, `mhm? unknown environment ... \n try without a specific env or some of ${Repository.getEnvs().map(e => "`" + e + "`").join(', ')}`);
+                bot.reply(message, `mhm? unknown... \n try without a specific env/app or some of ${Repository.matchEnvOrApp().map(e => "`" + e + "`").join(', ')}`);
                 return;
             }
 

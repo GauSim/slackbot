@@ -152,7 +152,7 @@ export class Repository {
 
     public static isAppName = (it: string) => !!it && appCollection.getAllAppNames().map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1;
 
-    public static getEnvs = (textInput?: EnvName | string): string[] => {
+    public static matchEnvOrApp = (textInput?: EnvName | string, inclAppNames = true): string[] => {
         return textInput
             ? textInput === 'ALL'
                 ? appCollection.getAllEnvNames()
@@ -160,7 +160,15 @@ export class Repository {
                     ? textInput.split(',')
                     : textInput.split(' '))
                     .map(it => it.trim())
-                    .filter(it => !!it && appCollection.getAllEnvNames().map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1)
-            : appCollection.getDefaultEnvNames();
+                    .filter(it => !!it
+                        && (
+                            appCollection.getAllEnvNames().map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1 // byEnvName
+                            || inclAppNames && appCollection.getAllAppNames().map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1 // byAppName
+                        )
+                )
+            : [
+                ...appCollection.getDefaultEnvNames(),
+                ... (inclAppNames ? appCollection.getAllAppNames() : [])
+            ];
     }
 }

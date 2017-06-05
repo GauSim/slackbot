@@ -61,7 +61,7 @@ export class Application implements IApplication {
 
     filterEnvironments(envFilter: EnvFilter): Environment[] {
         return this.envMap
-            .filter(([env, url]) => envFilter(env))
             .map(it => new Environment(it, this))
+            .filter(envFilter)
     }
 }

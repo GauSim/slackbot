@@ -3,7 +3,7 @@ import { AppName, Application, IApplication } from './Application';
 import { Maybe } from './Maybe';
 import { IFromatParams, Format } from '../Format';
 
-export type EnvFilter = (env: string) => boolean;
+export type EnvFilter = (env: Environment) => boolean;
 
 export type EnvName = string;
 
@@ -123,7 +123,7 @@ export class Environment implements IEnvironment {
                 lastModifiedTimestamp: null,
             }));
     }
-    
+
     private fromHockeyApp(get: httpMiddleWare, format: Format) {
         const { appShortName, githubRepoUrl } = this.app;
         const versionInfo = this.app.getVersionInfo(this.env)
