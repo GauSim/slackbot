@@ -4,6 +4,7 @@ import { IApplication, Application, AppName } from '../models/Application';
 import { Maybe } from '../models/Maybe';
 import { AppCollection } from './AppCollection';
 import { EnvFilter, Environment, EnvName } from '../models/Environment';
+
 const withSecret = (secrets: string, env: EnvName): [EnvName, string, Maybe<{ [h: string]: string }>] => {
     return (secrets.split(',')
         .map(line => {
@@ -169,8 +170,10 @@ export class Repository {
                     ? textInput.split(',')
                     : textInput.split(' '))
                     .map(it => it.trim())
-                    .filter(it => !!it && (allPossibleMatches.map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1
-                    ))
+                    .filter(it => !!it && (allPossibleMatches.map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1))
+                    .reduce((list, it) => [...list, ...([['BETA', 'QT'], ['STORE', 'PROD'], ['NIGHTLY', 'ET']] // fill in aliases
+                        .find(list => list.indexOf((it).toUpperCase()) > -1) || [it])], [] as string[])
+
             : allPossibleMatches;
     }
 }

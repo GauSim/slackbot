@@ -33,7 +33,7 @@ class WhatsOnline {
             }
             const start = moment(new Date());
             console.log(`GET | ${opt.url}`);
-            return (_request as (o) => Promise<string>)(Object.assign(opt, { timeout: 15000 }))
+            return (_request as (o) => Promise<string>)(Object.assign(opt, { timeout: 12000 }))
                 .then(response => {
                     console.log(`DONE [${(moment.duration(start.diff(new Date())).asSeconds() * -1)}] | ${opt.url}`);
                     return response;
@@ -63,16 +63,12 @@ class WhatsOnline {
     }
 
     getWork(toCheck: string[] = []): Promise<IEnvResponse>[] {
-
-        const withAliases = toCheck.reduce((list, it) => [...list, ...([['BETA', 'QT'], ['STORE', 'PROD'], ['NIGHTLY', 'ET']] // fill in aliases
-            .find(list => list.indexOf((it).toUpperCase()) > -1) || [it])], [] as string[])
-
         return Repository
             .filter(({ env, app }) => {
                 const [envName, url] = env;
-                return withAliases.length === 0
-                    || !!envName && withAliases.map(e => e.toLowerCase()).indexOf(envName.toLowerCase()) > -1 // by envName
-                    || withAliases.map(e => e.toLowerCase()).indexOf(app.appShortName.toLowerCase()) > -1 // by appName
+                return toCheck.length === 0
+                    || !!envName && toCheck.map(e => e.toLowerCase()).indexOf(envName.toLowerCase()) > -1 // by envName
+                    || toCheck.map(e => e.toLowerCase()).indexOf(app.appShortName.toLowerCase()) > -1 // by appName
             })
             .map(it => it.getStatus(this._get, this._format)
                 .catch(error => this.catchError(error, it)));
@@ -84,9 +80,6 @@ class WhatsOnline {
             .then(results => _(results).sortBy(it => it.appShortName).map(it => it.resultLine).join('\n'))
             .then(msg => `${msg}\n i'm done, all dates are in UTC+0, i did ${work.length} checks in ${(moment.duration(start.diff(new Date())).asSeconds() * -1)} sec.`);
     }
-
-
-
 
 }
 
