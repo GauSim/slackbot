@@ -1,5 +1,5 @@
+import _ = require('lodash');
 import { Maybe } from '../models/Maybe';
-import { Android } from './Android';
 import { Application, IApplication, AppName, AppType } from "../models/Application";
 import { EnvName } from '../models/Environment';
 
@@ -29,7 +29,7 @@ export class AppCollection {
     }
 
     public getAllAppNames(): AppName[] {
-        return this.all.map(it => it.appShortName);
+        return _.sortBy(this.all.map(it => it.appShortName));
     }
 
     public getAllEnvNames(): EnvName[] {
@@ -39,16 +39,6 @@ export class AppCollection {
                 result.push(envName);
             }
         }));
-        return result;
+        return _.sortBy(result);
     }
-
-    public getDefaultEnvNames() {
-        return [
-            'ET',
-            'QT',
-            'PT',
-            'PROD',
-            'SANDBOX'
-        ].filter(e => this.getAllEnvNames().indexOf(e) !== -1);
-    };
 }

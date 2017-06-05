@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node release/index.js",
     "test": "mocha '**/*.spec.js'",
-    "local": "npm run clean && npm run build && REDIS_URL='redis://simon:61037bdf0be4e6c50c0b60c47cd52a42@50.30.35.9:3328/' clientId='106108509589.109495619184' clientSecret='a31ce7b384a6e984ef0e5b6662b089c4' PORT='3000' pingURL='http://localhost:3000' redirectUri='http://localhost:3000/oauth' node release/index.js",
+    "local": "npm run clean && npm run build && REDIS_URL='redis://simon:61037bdf0be4e6c50c0b60c47cd52a42@50.30.35.9:3328/' clientId='106108509589.109495619184' clientSecret='a31ce7b384a6e984ef0e5b6662b089c4' PORT='3000' pingURL='http://localhost:3000' redirectUri='http://localhost:3000/oauth' androidSecrets='' node release/index.js",
     "build:live": "REDIS_URL='redis://simon:61037bdf0be4e6c50c0b60c47cd52a42@50.30.35.9:3328/' clientId='106108509589.109495619184' clientSecret='a31ce7b384a6e984ef0e5b6662b089c4' PORT='3000' pingURL='http://localhost:3000' redirectUri='http://localhost:3000/oauth' nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts",
     "build:start": "nodemon --exec npm start",
     "prebuild": "npm run clean",

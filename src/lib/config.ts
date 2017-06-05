@@ -3,9 +3,10 @@ export class Config {
     ? process.env.buildServerBase
     : '';
 
-  public readonly androidSecretMap = process.env.androidSecretMap
-    ? process.env.androidSecretMap
-    : `{"nightly":["a","b"],"beta":["a","b"],"store":["a","b"],"iron":["a","b"],"tosca":["a","b"]}`
+  // formats => [env]:[id]:[token], [...]
+  public readonly androidSecrets = process.env.androidSecrets
+    ? process.env.androidSecrets
+    : ''
 
 };
 

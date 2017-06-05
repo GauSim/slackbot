@@ -12,7 +12,7 @@ interface IMessage { text: string, match: [string] };
 
 const NO_VERSION_NUMBER_FOUND = 'no version number found';
 
-const removeMatch = (message: IMessage): EnvName => message.text
+const removeMatch = (message: IMessage): string => message.text
     .replace(message.match[0], '')
     .trim()
     .toUpperCase();
@@ -31,10 +31,11 @@ class WhatsOnline {
             if (!opt) {
                 return Promise.reject(new Error('missing reqest options'))
             }
+            const start = moment(new Date());
             console.log(`GET | ${opt.url}`);
-            return (_request as (o) => Promise<string>)(opt)
+            return (_request as (o) => Promise<string>)(Object.assign(opt, { timeout: 15000 }))
                 .then(response => {
-                    console.log(`DONE | ${opt.url}`);
+                    console.log(`DONE [${(moment.duration(start.diff(new Date())).asSeconds() * -1)}] | ${opt.url}`);
                     return response;
                 });
         }
@@ -53,7 +54,7 @@ class WhatsOnline {
                 buildTimestamp: null,
                 deployedTimestamp: null,
                 lastModifiedTimestamp: null,
-                resultLine: ("`" + envName + "`") + ` | <${url}|${app.appShortName}> → looks offline`,
+                resultLine: ("`" + envName + "`") + ` | <${url}|${app.appShortName}> → looks offline (${error instanceof Error ? error.message : ''})`,
                 hasError: true
             }
         } else {
@@ -62,21 +63,25 @@ class WhatsOnline {
     }
 
     getWork(toCheck: string[] = []): Promise<IEnvResponse>[] {
+
+        const withAliases = toCheck.reduce((list, it) => [...list, ...([['BETA', 'QT'], ['STORE', 'PROD'], ['NIGHTLY', 'ET']] // fill in aliases
+            .find(list => list.indexOf((it).toUpperCase()) > -1) || [it])], [] as string[])
+
         return Repository
             .filter(({ env, app }) => {
                 const [envName, url] = env;
-                return toCheck.length === 0
-                    || !!envName && toCheck.map(e => e.toLowerCase()).indexOf(envName.toLowerCase()) > -1 // by envName
-                    || toCheck.map(e => e.toLowerCase()).indexOf(app.appShortName.toLowerCase()) > -1 // by appName
+                return withAliases.length === 0
+                    || !!envName && withAliases.map(e => e.toLowerCase()).indexOf(envName.toLowerCase()) > -1 // by envName
+                    || withAliases.map(e => e.toLowerCase()).indexOf(app.appShortName.toLowerCase()) > -1 // by appName
             })
             .map(it => it.getStatus(this._get, this._format)
                 .catch(error => this.catchError(error, it)));
     }
 
     check(work: Promise<IEnvResponse>[]): Promise<string> {
-        const start = moment(new Date())
+        const start = moment(new Date());
         return Promise.all(work)
-            .then(results => _.sortBy(results, it => it.appShortName).map(it => it.resultLine).join('\n'))
+            .then(results => _(results).sortBy(it => it.appShortName).map(it => it.resultLine).join('\n'))
             .then(msg => `${msg}\n i'm done, all dates are in UTC+0, i did ${work.length} checks in ${(moment.duration(start.diff(new Date())).asSeconds() * -1)} sec.`);
     }
 
@@ -100,7 +105,7 @@ const actions = [
             const whatsOnline = new WhatsOnline(request, new Format());
             const toCheck = Repository.matchEnvOrApp(removeMatch(message));
             if (!toCheck.length) {
-                bot.reply(message, `mhm? unknown... \n try without a specific env/app or some of ${Repository.matchEnvOrApp().map(e => "`" + e + "`").join(', ')}`);
+                bot.reply(message, `mhm? unknown... \n try ${Repository.matchEnvOrApp().map(e => "`" + e + "`").join(', ')}`);
                 return;
             }
 
@@ -130,7 +135,7 @@ const actions = [
 
             const toCheck = Repository.matchEnvOrApp(removeMatch(message));
             if (!toCheck.length) {
-                bot.reply(message, `mhm? unknown... \n try without a specific env/app or some of ${Repository.matchEnvOrApp().map(e => "`" + e + "`").join(', ')}`);
+                bot.reply(message, `mhm? unknown... \n try ${Repository.matchEnvOrApp().map(e => "`" + e + "`").join(', ')}`);
                 return;
             }
 

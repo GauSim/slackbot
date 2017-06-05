@@ -1,29 +1,33 @@
+import _ = require('lodash');
 import Config from '../config';
-import { Android } from './Android';
 import { IApplication, Application, AppName } from '../models/Application';
 import { Maybe } from '../models/Maybe';
 import { AppCollection } from './AppCollection';
-import { EnvFilter, Environment } from '../models/Environment';
+import { EnvFilter, Environment, EnvName } from '../models/Environment';
+const withSecret = (secrets: string, env: EnvName): [EnvName, string, Maybe<{ [h: string]: string }>] => {
+    return (secrets.split(',')
+        .map(line => {
+            const [envName, appId, token] = line.split(':');
+            return [envName, `https://rink.hockeyapp.net/api/2/apps/${appId}/app_versions/`, { 'X-HockeyAppToken': token }];
+        })
+        .find(([itsName]) => itsName === env)
+        || [env, 'https://rink.hockeyapp.net/api/2/apps/${appId}/app_versions/']) as [EnvName, string, Maybe<{ [h: string]: string }>];
+}
 
-type EnvName = 'ALL'
-    | 'ET'
-    | 'UT'
-    | 'QT'
-    | 'PT'
-    | 'PROD'
-    | 'DE'
-    | 'CN'
-    | 'EU'
-    | 'US'
-    | 'PROD-QA-EU'
-    | 'PROD-QA-US'
-    | 'SANDBOX'
-
-const FSM_GITHUB_REPO_URL = 'https://github.com/coresystemsFSM/portal';
 const appCollection = new AppCollection([
     {
+        appShortName: 'ANDROID',
+        githubRepoUrl: 'https://github.com/coresystemsFSM/android-coresuite',
+        type: 'ANDROID',
+        envMap: [
+            withSecret(Config.androidSecrets, 'NIGHTLY'),
+            withSecret(Config.androidSecrets, 'BETA'),
+            withSecret(Config.androidSecrets, 'STORE')
+        ]
+    },
+    {
         appShortName: 'FACADE',
-        githubRepoUrl: FSM_GITHUB_REPO_URL,
+        githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
         type: 'FACADE',
         envMap: ([
             ['ET', 'https://et.dev.coresuite.com/portal/status'],
@@ -38,7 +42,7 @@ const appCollection = new AppCollection([
             //  ['PROD-QA-EU', 'https://prod-qa-eu.coresystems.net/portal/status'],
             //  ['PROD-QA-US', 'https://prod-qa-us.coresystems.net/portal/status'],
             ['SANDBOX', 'https://sb.dev.coresuite.com/portal/status']
-        ] as [EnvName, string][])
+        ])
     },
     {
         appShortName: 'DS',
@@ -64,7 +68,7 @@ const appCollection = new AppCollection([
             ['US', 'https://us.coresuite.com/mc/status'],
             ['CN', 'https://cn.coresuite.com/mc/status'],
             ['SANDBOX', 'https://sb.dev.coresuite.com/mc/status']
-        ] as [EnvName, string][])
+        ])
     },
     {
         appShortName: 'DC',
@@ -98,7 +102,7 @@ const appCollection = new AppCollection([
             ['US', 'https://us.coresuite.com/admin/status'],
             ['CN', 'https://cn.coresuite.com/admin/status'],
             ['SANDBOX', 'https://sb.dev.coresuite.com/admin/status']
-        ] as [EnvName, string][])
+        ])
     },
     {
         appShortName: 'NOW',
@@ -108,7 +112,7 @@ const appCollection = new AppCollection([
             ['ET', 'https://et.now.gl'],
             ['QT', 'https://qt.now.gl'],
             ['PROD', 'https://now.gl']
-        ] as [EnvName, string][])
+        ])
     },
     ...([
         ['WFM', 'workforce-management'],
@@ -124,7 +128,7 @@ const appCollection = new AppCollection([
         .map(([appShortName, path]) => ({
             appShortName,
             type: 'WEBAPP',
-            githubRepoUrl: FSM_GITHUB_REPO_URL,
+            githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
             envMap: ([
                 ['ET', 'https://et.coresystems.net'],
                 ['QT', 'https://qt.coresystems.net'],
@@ -152,7 +156,12 @@ export class Repository {
 
     public static isAppName = (it: string) => !!it && appCollection.getAllAppNames().map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1;
 
-    public static matchEnvOrApp = (textInput?: EnvName | string, inclAppNames = true): string[] => {
+    public static matchEnvOrApp = (textInput?: EnvName | string): string[] => {
+        const allPossibleMatches = _.sortBy([
+            ...appCollection.getAllEnvNames(),
+            ...appCollection.getAllAppNames()
+        ]);
+
         return textInput
             ? textInput === 'ALL'
                 ? appCollection.getAllEnvNames()
@@ -160,15 +169,8 @@ export class Repository {
                     ? textInput.split(',')
                     : textInput.split(' '))
                     .map(it => it.trim())
-                    .filter(it => !!it
-                        && (
-                            appCollection.getAllEnvNames().map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1 // byEnvName
-                            || inclAppNames && appCollection.getAllAppNames().map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1 // byAppName
-                        )
-                    )
-            : [
-                ...appCollection.getDefaultEnvNames(),
-                ... (inclAppNames ? appCollection.getAllAppNames() : [])
-            ];
+                    .filter(it => !!it && (allPossibleMatches.map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1
+                    ))
+            : allPossibleMatches;
     }
 }

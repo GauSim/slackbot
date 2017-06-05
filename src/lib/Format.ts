@@ -3,7 +3,7 @@ import { Maybe } from './models/Maybe';
 import { IEnvResponse, EnvName } from './models/Environment';
 
 export interface IFromatParams {
-    env: [EnvName, string];
+    env: [EnvName, string, Maybe<{ [key: string]: string }>];
     appShortName: string;
     version: Maybe<string>;
     lastCommit: Maybe<string>;

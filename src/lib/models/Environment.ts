@@ -3,13 +3,28 @@ import { AppName, Application, IApplication } from './Application';
 import { Maybe } from './Maybe';
 import { IFromatParams, Format } from '../Format';
 
-export type EnvFilter = (env: Environment) => boolean;
+export type EnvName = 'ALL'
+    | 'ET'
+    | 'UT'
+    | 'QT'
+    | 'PT'
+    | 'PROD'
+    | 'DE'
+    | 'CN'
+    | 'EU'
+    | 'US'
+    | 'PROD-QA-EU'
+    | 'PROD-QA-US'
+    | 'SANDBOX'
+    | 'NIGHTLY'
+    | 'BETA'
+    | 'STORE'
 
-export type EnvName = string;
+export type EnvFilter = (env: Environment) => boolean;
 
 export interface IRequestOptions {
     url: string;
-    headers?: { [h: string]: string }
+    headers?: Maybe<{ [h: string]: string }>
 }
 
 export interface IEnvResponse extends IFromatParams {
@@ -17,15 +32,15 @@ export interface IEnvResponse extends IFromatParams {
     hasError: boolean;
 }
 
-export type httpMiddleWare = (opt: Maybe<{ url: string, headers?: { [h: string]: string } }>) => Promise<string>;
+export type httpMiddleWare = (opt: Maybe<IRequestOptions>) => Promise<string>;
 
 export interface IEnvironment {
-    env: [EnvName, string];
+    env: [EnvName, string, Maybe<{ [h: string]: string }>];
     app: IApplication
 }
 
 export class Environment implements IEnvironment {
-    constructor(public env: [EnvName, string], public app: Application) {
+    constructor(public env: [EnvName, string, Maybe<{ [h: string]: string }>], public app: Application) {
     }
 
     public getStatus(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
@@ -36,8 +51,10 @@ export class Environment implements IEnvironment {
                 return this.fromFacade(get, format);
             case 'CLOUD':
                 return this.fromCloud(get, format);
+            case 'ANDROID':
+                return this.fromHockeyApp(get, format);
             default:
-                return Promise.reject(new Error('uknown app type'));
+                return Promise.reject(new Error(`appType:${this.app.type} has no mapper`));
         }
     }
 

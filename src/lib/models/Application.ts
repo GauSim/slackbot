@@ -1,5 +1,5 @@
 import { Maybe } from './Maybe';
-import { Environment, EnvFilter, EnvName } from './Environment';
+import { Environment, EnvFilter, EnvName, IRequestOptions } from './Environment';
 
 export type AppName = 'FACADE'
     | 'NOW'
@@ -26,14 +26,14 @@ export interface IApplication {
     appShortName: AppName;
     githubRepoUrl: string;
     type: AppType;
-    envMap: [EnvName, string][];
+    envMap: [EnvName, string, Maybe<{ [key: string]: string }>][];
 };
 
 export class Application implements IApplication {
     appShortName: AppName;
     githubRepoUrl: string;
     type: AppType;
-    envMap: [EnvName, string][];
+    envMap: [EnvName, string, Maybe<{ [key: string]: string }>][];
     constructor(obj: IApplication) {
         this.appShortName = obj.appShortName;
         this.githubRepoUrl = obj.githubRepoUrl;
@@ -41,16 +41,18 @@ export class Application implements IApplication {
         this.envMap = obj.envMap;
     }
 
-    getVersionInfo([env, url]: [EnvName, string]): Maybe<{ url: string }> {
+    getVersionInfo([env, url, headers]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
         switch (this.type) {
             case 'WEBAPP':
                 return { url: `${url}/appconfig.json` };
+            case 'ANDROID':
+                return { url, headers };
             default:
-                return { url }
+                return { url };
         }
     }
 
-    getDeploymentInfo([env, url]: [EnvName, string]): Maybe<{ url: string }> {
+    getDeploymentInfo([env, url]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
         switch (this.type) {
             case 'WEBAPP':
                 return { url: `${url}/deployed.json` };
