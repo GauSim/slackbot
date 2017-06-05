@@ -1,6 +1,6 @@
-import { IEnv } from './Repository'
 import { Config } from '../config';
-import { Maybe } from "../models/Maybe";
+import { Maybe } from '../models/Maybe';
+import { IEnvironment } from '../models/Environment';
 
 export type androidVersion = 'nightly'
     | 'beta'
@@ -36,7 +36,7 @@ export class Android {
 
         return (androidSecretMap[version] || [null, null]) as androidSecret;
     }
-    public static getEnv(config: Config, appShortName: androidVersion): Maybe<IEnv> {
+    public static getEnv(config: Config, appShortName: androidVersion): Maybe<IEnvironment> {
        return null;
        /* const [appId, token] = this.getSecret(config, appShortName);
         if (!appId || !token) {

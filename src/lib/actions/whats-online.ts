@@ -1,26 +1,36 @@
 import request = require('request-promise-native');
-import _ = require('underscore');
+import _ = require('lodash');
 import moment = require('moment-timezone');
 
 import * as fun from './fun';
-import { Format, IEnvResponse } from '../Format';
-import { Repository, IEnv } from '../env/Repository';
-import { Maybe } from "../models/Maybe";
+import { Format } from '../Format';
+import { Repository } from '../env/Repository';
+import { Maybe } from '../models/Maybe';
+import { Environment, IEnvResponse, httpMiddleWare, EnvName } from '../models/Environment';
+
+interface IMessage { text: string, match: [string] };
 
 const NO_VERSION_NUMBER_FOUND = 'no version number found';
 
+const removeMatch = (message: IMessage): EnvName => message.text
+    .replace(message.match[0], '')
+    .trim()
+    .toUpperCase();
 
 
 class WhatsOnline {
 
-    get: (opt: { url: string, headers?: { [h: string]: string } }) => Promise<string>;
+    _get: httpMiddleWare;
 
     constructor(
         _request: any,
-        private format: Format,
+        private _format: Format,
         private doNotThrow = true) {
 
-        this.get = (opt: { url: string }) => {
+        this._get = (opt: Maybe<{ url: string }>) => {
+            if (!opt) {
+                return Promise.reject(new Error('missing reqest options'))
+            }
             console.log(`GET | ${opt.url}`);
             return (_request as (o) => Promise<string>)(opt)
                 .then(response => {
@@ -30,20 +40,23 @@ class WhatsOnline {
         }
     }
 
-    private catchError(error: Error | string, env: string, appShortName: string, versionInfo: { url: string }): IEnvResponse {
+    private catchError(error: Error | string, envInst: Environment): IEnvResponse {
+        const appShortName = envInst.app.appShortName;
+        const env = envInst.env;
+        const versionInfo = envInst.app.getVersionInfo(env);
+
         if (this.doNotThrow) {
-            console.log({ error, env, appShortName, });
+            console.log({ error, env: envInst.env, appShortName });
             return {
-                env,
+                env: envInst.env,
                 appShortName,
-                versionInfo,
                 version: null,
                 lastCommit: null,
                 githubRepoUrl: null,
                 buildTimestamp: null,
                 deployedTimestamp: null,
                 lastModifiedTimestamp: null,
-                resultLine: ("`" + env + "`") + ` | <${versionInfo.url}|${appShortName}> → looks offline`,
+                resultLine: ("`" + env + "`") + ` | <${versionInfo ? versionInfo.url : ''}|${appShortName}> → looks offline`,
                 hasError: true
             }
         } else {
@@ -51,164 +64,21 @@ class WhatsOnline {
         }
     }
 
-    fromWebapp({ env, appShortName, versionInfo, deploymentInfo, githubRepoUrl }: IEnv) {
-        return Promise
-            .all([
-                this.get(versionInfo)
-                    .then(it => JSON.parse(it) as { lastCommit: string; buildTimestamp: string; appConfig: { version: string; } }),
-                (deploymentInfo
-                    ? this.get(deploymentInfo).then(it => JSON.parse(it))
-                        .catch(error => ({ timestamp: null })) // catch 404, and redirects on deploy file.
-                    : Promise.resolve(({ timestamp: null }))) as Promise<{ timestamp: null | string }>
-            ])
-            .then(([{ lastCommit, buildTimestamp, appConfig }, { timestamp }]) => this.format.mixinResultLine({
-                env,
-                appShortName,
-                versionInfo,
-                githubRepoUrl,
-                lastCommit,
-                buildTimestamp,
-                version: appConfig.version,
-                deployedTimestamp: timestamp,
-                lastModifiedTimestamp: null, // headers["last-modified"],
-            }))
-            .catch(error => this.catchError(error, env, appShortName, versionInfo));
+    getWork(toCheck: string[] = []): Promise<IEnvResponse>[] {
+        return Repository.filter((env: string) => toCheck.length === 0 || toCheck.map(e => e.toLowerCase()).indexOf(env.toLowerCase()) > -1)
+            .map(it => it.getStatus(this._get, this._format)
+                .catch(error => this.catchError(error, it)));
     }
 
-    fromCloud({ env, appShortName, versionInfo, deploymentInfo, githubRepoUrl }: IEnv) {
-        return this.get(versionInfo)
-            .then(rawBody => {
-
-                let version = null as null | string;
-                const exp = new RegExp(/([0-9][0-9]?\.[0-9][0-9]?\.[0-9][0-9]?\.[0-9][0-9]?[0-9]?)/);
-                if (exp.test(rawBody)) {
-                    const matches = exp.exec(rawBody);
-                    version = matches && matches[0] ? matches[0] : version;
-                }
-
-
-                let buildTimestamp = null as null | moment.Moment;
-                if (version) {
-                    buildTimestamp = moment(
-                        rawBody
-                            .toLowerCase()
-                            .replace(`${appShortName}-${version}`.toLowerCase(), '')
-                            .replace('(', '')
-                            .replace(')', '')
-                            .toUpperCase(),
-                        moment.ISO_8601)
-                        .utc();
-                }
-
-                return this.format.mixinResultLine({
-                    env,
-                    appShortName,
-                    versionInfo,
-                    githubRepoUrl,
-                    version: version,
-                    lastCommit: null,
-                    buildTimestamp: buildTimestamp,
-                    deployedTimestamp: null,
-                    lastModifiedTimestamp: null,
-                });
-            })
-            .catch(error => this.catchError(error, env, appShortName, versionInfo));
-    }
-
-    fromFacade({ env, appShortName, versionInfo, deploymentInfo, githubRepoUrl }: IEnv) {
-        return this.get(versionInfo)
-            .then(rawBody => JSON.parse(rawBody) as { lastCommit: string; buildTimestamp: string; deployTimestamp: string, version: string })
-            .then(({ lastCommit, version, buildTimestamp, deployTimestamp }) => this.format.mixinResultLine({
-                env,
-                appShortName,
-                versionInfo,
-                githubRepoUrl,
-                version,
-                lastCommit,
-                buildTimestamp,
-                deployedTimestamp: deployTimestamp,
-                lastModifiedTimestamp: null,
-            }))
-            .catch(error => this.catchError(error, env, appShortName, versionInfo));
-    }
-
-    fromHockeyApp({ env, appShortName, versionInfo, deploymentInfo, githubRepoUrl }: IEnv) {
-        return this.get(versionInfo)
-            .then(rawBody => {
-
-                const [it] = (JSON.parse(rawBody) as {
-                    app_versions: {
-                        download_url: string;
-                        shortversion: string;
-                        updated_at: string;
-                        notes: string;
-                    }[], status: 'success'
-                }).app_versions;
-
-                let lastCommit = null as Maybe<string>;
-
-                const exp = new RegExp(/\b([a-f0-9]{40})\b/);
-                if (exp.test(it.notes)) {
-                    const matches = exp.exec(it.notes);
-                    lastCommit = matches && matches[0] ? matches[0] : lastCommit;
-                }
-
-                return this.format.mixinResultLine({
-                    env,
-                    appShortName,
-                    lastCommit,
-                    githubRepoUrl,
-                    versionInfo: { url: it.download_url },
-                    version: it.shortversion,
-                    buildTimestamp: null,
-                    deployedTimestamp: it.updated_at,
-                    lastModifiedTimestamp: null,
-                });
-            })
-            .catch(error => this.catchError(error, env, appShortName, versionInfo));
-    }
-
-    getUrls(envToCheck: string[] = []) {
-        const envFilter = (env: string) =>
-            envToCheck.length === 0
-            || envToCheck.map(e => e.toLowerCase()).indexOf(env.toLowerCase()) > -1;
-
-
-        return [
-            ...Repository.fsm(envFilter)
-                .map(it => this.fromWebapp(it)),
-
-            ...Repository.facade(envFilter)
-                .map(it => this.fromFacade(it)),
-
-            ...Repository.now(envFilter)
-                .map(it => this.fromWebapp(it)),
-
-            ...Repository.dc(envFilter)
-                .map(it => this.fromCloud(it)),
-
-            ...Repository.mc(envFilter)
-                .map(it => this.fromCloud(it)),
-
-            ...Repository.admin(envFilter)
-                .map(it => this.fromCloud(it)),
-
-            ...Repository.ds(envFilter)
-                .map(it => this.fromCloud(it)),
-
-            ...Repository.android(envFilter)
-                .map(it => this.fromHockeyApp(it))
-
-        ] as Promise<IEnvResponse>[];
-    }
-
-
-    check(work: Promise<IEnvResponse>[]) {
-        const start = moment(new Date());
+    check(work: Promise<IEnvResponse>[]): Promise<string> {
+        const start = moment(new Date())
         return Promise.all(work)
             .then(results => _.sortBy(results, it => it.appShortName).map(it => it.resultLine).join('\n'))
             .then(msg => `${msg}\n i'm done, all dates are in UTC+0, i did ${work.length} checks in ${(moment.duration(start.diff(new Date())).asSeconds() * -1)} sec.`);
     }
+
+
+
 
 }
 
@@ -216,32 +86,24 @@ const actions = [
     {
         triggers: [
             'version ',
-            "what's online",
             'v '
         ],
-        help: `i will check each environment and tell you what version is deployed, you can also check for a specific env => ${Repository.DEFAULT_ENVIRONMENTS.map(e => "`" + e + "`").join(', ')}`,
-        handler: (bot, message) => {
+        help: `i will check each environment and tell you what version is deployed, you can also check for a specific env => ${Repository.getEnvs().map(e => "`" + e + "`").join(', ')}`,
+        handler: (bot, message: IMessage) => {
 
 
             fun.getRandomMsg(funnyStuff => bot.reply(message, funnyStuff));
 
-            const envInputString = message.text
-                .replace(message.match[0], '')
-                .trim()
-                .toUpperCase();
-
-            let envToCheck = Repository.getEnvsFromTextInputString(envInputString);
-
-            if (!envToCheck.length) {
-                bot.reply(message, `mhm? unknown environment ... \n try without a specific env or some of ${Repository.DEFAULT_ENVIRONMENTS.map(e => "`" + e + "`").join(', ')}`);
+            const whatsOnline = new WhatsOnline(request, new Format());
+            const toCheck = Repository.getEnvs(removeMatch(message));
+            if (!toCheck.length) {
+                bot.reply(message, `mhm? unknown environment ... \n try without a specific env or some of ${Repository.getEnvs().map(e => "`" + e + "`").join(', ')}`);
                 return;
             }
 
-            const format = new Format();
-            const whatsOnline = new WhatsOnline(request, format);
-            const work = whatsOnline.getUrls(envToCheck);
+            const work = whatsOnline.getWork(toCheck);
 
-            bot.reply(message, `i'll check ${envToCheck.map(e => "`" + e.toUpperCase() + "`").join(', ')} on ${work.length} servers ...`);
+            bot.reply(message, `i'll check ${toCheck.map(e => "`" + e.toUpperCase() + "`").join(', ')} on ${work.length} servers ...`);
 
             whatsOnline.check(work)
                 .then(replyText => bot.reply(message, replyText))
@@ -257,27 +119,21 @@ const actions = [
             'd '
         ],
         help: `ill try to get a diff of the env's`,
-        handler: (bot, message) => {
+        handler: (bot, message: IMessage) => {
 
             fun.getRandomMsg(funnyStuff => bot.reply(message, funnyStuff));
 
-            const envInputString = message.text
-                .replace(message.match[0], '')
-                .trim()
-                .toUpperCase();
+            const whatsOnline = new WhatsOnline(request, new Format());
 
-            let envToCheck = Repository.getEnvsFromTextInputString(envInputString);
-
-            if (!envToCheck.length) {
-                bot.reply(message, `mhm? unknown environment ... \n try without a specific env or some of ${Repository.DEFAULT_ENVIRONMENTS.map(e => "`" + e + "`").join(', ')}`);
+            const toCheck = Repository.getEnvs(removeMatch(message));
+            if (!toCheck.length) {
+                bot.reply(message, `mhm? unknown environment ... \n try without a specific env or some of ${Repository.getEnvs().map(e => "`" + e + "`").join(', ')}`);
                 return;
             }
 
-            const format = new Format();
-            const whatsOnline = new WhatsOnline(request, format);
-            const work = whatsOnline.getUrls(envToCheck);
+            const work = whatsOnline.getWork(toCheck);
 
-            bot.reply(message, `diff'ing ${envToCheck.map(e => "`" + e.toUpperCase() + "`").join(', ')} on ${work.length} servers ...`);
+            bot.reply(message, `diff'ing ${toCheck.map(e => "`" + e.toUpperCase() + "`").join(', ')} on ${work.length} servers ...`);
 
             Promise.all(work)
                 .then(results => {
@@ -301,7 +157,7 @@ const actions = [
                         */
 
                     return allAreTheSame
-                        ? '... looks the same to me →' + envToCheck.map(it => '`' + it + '`').join(' == ')
+                        ? '... looks the same to me →' + toCheck.map(it => '`' + it + '`').join(' == ')
                         : (grpByAppHash as any)
                             .map((list: IEnvResponse[]) => {
                                 const versionStr = list[0].lastCommit

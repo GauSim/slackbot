@@ -1,22 +1,16 @@
 import moment = require('moment-timezone');
-import { Maybe } from "./models/Maybe";
+import { Maybe } from './models/Maybe';
+import { IEnvResponse, EnvName } from './models/Environment';
 
-
-interface IFromatParams {
-    env: string;
+export interface IFromatParams {
+    env: [EnvName, string];
     appShortName: string;
-    versionInfo: { url: string };
     version: Maybe<string>;
     lastCommit: Maybe<string>;
     githubRepoUrl: Maybe<string>;
     buildTimestamp: Maybe<string | moment.Moment>;
     lastModifiedTimestamp: Maybe<string | moment.Moment>;
     deployedTimestamp: Maybe<string | moment.Moment>;
-}
-
-export interface IEnvResponse extends IFromatParams {
-    resultLine: string;
-    hasError: boolean;
 }
 
 export class Format {
@@ -62,25 +56,21 @@ export class Format {
 
     public mixinResultLine(response: IFromatParams): IEnvResponse {
 
-        const { lastCommit, githubRepoUrl, buildTimestamp, lastModifiedTimestamp, deployedTimestamp, env, versionInfo, appShortName, version } = response;
-
-        const commitStr = this.commit(githubRepoUrl, lastCommit);
-        const buildStr = this.date('[build]', buildTimestamp);
-        const lastModifiedStr = this.date('[last-modified]', lastModifiedTimestamp);
-        const deployedStr = this.date('[deployed]', deployedTimestamp);
+        const { lastCommit, githubRepoUrl, buildTimestamp, lastModifiedTimestamp, deployedTimestamp, env, appShortName, version } = response;
 
         const pretty = [
             version,
-            commitStr,
-            lastModifiedStr,
-            buildStr,
-            deployedStr
+            this.commit(githubRepoUrl, lastCommit),
+            this.date('[last-modified]', lastModifiedTimestamp),
+            this.date('[build]', buildTimestamp),
+            this.date('[deployed]', deployedTimestamp)
         ]
             .filter(x => !!x && x !== '')
             .join(' ');
 
+        const [envName, url] = env;
 
-        const resultLine = ("`" + env + "`") + ` | <${versionInfo.url}|${appShortName.toUpperCase()}> → ${pretty}`;
+        const resultLine = ("`" + envName + "`") + ` | <${url}|${appShortName.toUpperCase()}> → ${pretty}`;
 
         return Object.assign({}, response, { resultLine, hasError: false });
     }
