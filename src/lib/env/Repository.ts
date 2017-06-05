@@ -35,8 +35,8 @@ const appCollection = new AppCollection([
             ['CN', 'https://cn.coresystems.net/portal/status'],
             ['EU', 'https://eu.coresystems.net/portal/status'],
             ['US', 'https://us.coresystems.net/portal/status'],
-            ['PROD-QA-EU', 'https://prod-qa-eu.coresystems.net/portal/status'],
-            ['PROD-QA-US', 'https://prod-qa-us.coresystems.net/portal/status'],
+            //  ['PROD-QA-EU', 'https://prod-qa-eu.coresystems.net/portal/status'],
+            //  ['PROD-QA-US', 'https://prod-qa-us.coresystems.net/portal/status'],
             ['SANDBOX', 'https://sb.dev.coresuite.com/portal/status']
         ] as [EnvName, string][])
     },
@@ -136,8 +136,8 @@ const appCollection = new AppCollection([
                 ['CN', 'https://cn.coresystems.net'],
                 ['US', 'https://us.coresystems.net'],
                 ['UT', 'https://ut.coresystems.net'],
-                ['PROD-QA-EU', 'https://prod-qa-eu.coresystems.net'],
-                ['PROD-QA-US', 'https://prod-qa-us.coresystems.net']
+                // ['PROD-QA-EU', 'https://prod-qa-eu.coresystems.net'],
+                // ['PROD-QA-US', 'https://prod-qa-us.coresystems.net']
             ] as [EnvName, string][])
                 .reduce((list, [env, url]) => [...list, [env, `${url}/${path}`] as [EnvName, string]], [] as [EnvName, string][]),
         }))
@@ -165,7 +165,7 @@ export class Repository {
                             appCollection.getAllEnvNames().map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1 // byEnvName
                             || inclAppNames && appCollection.getAllAppNames().map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1 // byAppName
                         )
-                )
+                    )
             : [
                 ...appCollection.getDefaultEnvNames(),
                 ... (inclAppNames ? appCollection.getAllAppNames() : [])
