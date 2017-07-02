@@ -59,7 +59,7 @@ export class Format {
         const { lastCommit, githubRepoUrl, buildTimestamp, lastModifiedTimestamp, deployedTimestamp, env, appShortName, version } = response;
 
         const pretty = [
-            `*${version}*`,
+            `*${version}* `,
             this.commit(githubRepoUrl, lastCommit),
             this.date('[last-modified]', lastModifiedTimestamp),
             this.date('[build]', buildTimestamp),

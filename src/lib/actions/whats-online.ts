@@ -165,7 +165,7 @@ const actions = [
                                     ? list[0].version + '' + new Format().commit(list[0].githubRepoUrl, list[0].lastCommit)
                                     : list[0].version
 
-                                return '`' + list[0].appShortName + '`' + ` | ${versionStr} → ` + list.map(it => '`' + it.env[0] + '`').join(' == ');
+                                return '`' + list[0].appShortName + '`' + ` | *${versionStr}* → ` + list.map(it => '`' + it.env[0] + '`').join(' == ');
                             })
                             .sort()
                             .join('\n')
