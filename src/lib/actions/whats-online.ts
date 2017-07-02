@@ -54,7 +54,7 @@ class WhatsOnline {
                 buildTimestamp: null,
                 deployedTimestamp: null,
                 lastModifiedTimestamp: null,
-                resultLine: ("`" + envName + "`") + ` | <${url}|${app.appShortName}> → looks offline (${error instanceof Error ? error.message : ''})`,
+                resultLine: ("`" + envName + "`") + ` | <${url}|${app.appShortName}> → *looks offline* (${error instanceof Error ? error.message : ''})`,
                 hasError: true
             }
         } else {

@@ -124,7 +124,9 @@ const appCollection = new AppCollection([
         ['PM', 'project-management'],
         ['DL', 'dataloader'],
         ['CO', 'configuration'],
-        ['MAP', 'map']
+        ['MAP', 'map'],
+        ['MP', 'marketplace'],
+        ['SU', 'signup'],
     ] as [AppName, string][])
         .map(([appShortName, path]) => ({
             appShortName,
@@ -141,6 +143,7 @@ const appCollection = new AppCollection([
                 ['CN', 'https://cn.coresystems.net'],
                 ['US', 'https://us.coresystems.net'],
                 ['UT', 'https://ut.coresystems.net'],
+                ['PREVIEW','https://preview.coresystems.net']
                 // ['PROD-QA-EU', 'https://prod-qa-eu.coresystems.net'],
                 // ['PROD-QA-US', 'https://prod-qa-us.coresystems.net']
             ] as [EnvName, string][])
