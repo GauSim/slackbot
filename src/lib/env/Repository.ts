@@ -126,7 +126,7 @@ const appCollection = new AppCollection([
         ['CO', 'configuration'],
         ['MAP', 'map'],
         ['MP', 'marketplace'],
-        ['SU', 'signup'],
+        ['SU', 'sign-up'],
     ] as [AppName, string][])
         .map(([appShortName, path]) => ({
             appShortName,
