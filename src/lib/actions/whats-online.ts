@@ -55,7 +55,8 @@ class WhatsOnline {
                 deployedTimestamp: null,
                 lastModifiedTimestamp: null,
                 resultLine: ("`" + envName + "`") + ` | <${url}|${app.appShortName}> → *looks offline* (${error instanceof Error ? error.message : ''})`,
-                hasError: true
+                hasError: true,
+                diffingHash:`${Date.now()}-${app.appShortName}-${envName}`
             }
         } else {
             throw error instanceof Error ? error : new Error(error);
@@ -139,8 +140,8 @@ const actions = [
             Promise.all(work)
                 .then(results => {
                     const grpByAppHash = _.chain(results)
-                        .filter(it => !!it.version && !it.hasError)
-                        .groupBy(it => `${it.appShortName} ${it.version}`); // diffing by version string 
+                        .filter(it => !!it.version && !it.hasError) // dont show errors
+                        .groupBy(it => it.diffingHash); 
 
 
                     // do a better full diff! 
@@ -162,7 +163,7 @@ const actions = [
                         : (grpByAppHash as any)
                             .map((list: IEnvResponse[]) => {
                                 const versionStr = list[0].lastCommit
-                                    ? list[0].version + '' + new Format().commit(list[0].githubRepoUrl, list[0].lastCommit)
+                                    ? `${list[0].version} ${new Format().commit(list[0].githubRepoUrl, list[0].lastCommit)}`
                                     : list[0].version
 
                                 return '`' + list[0].appShortName + '`' + ` | *${versionStr}* → ` + list.map(it => '`' + it.env[0] + '`').join(' == ');

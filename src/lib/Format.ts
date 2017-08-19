@@ -11,6 +11,7 @@ export interface IFromatParams {
     buildTimestamp: Maybe<string | moment.Moment>;
     lastModifiedTimestamp: Maybe<string | moment.Moment>;
     deployedTimestamp: Maybe<string | moment.Moment>;
+    diffingHash: string;
 }
 
 export class Format {
@@ -46,7 +47,7 @@ export class Format {
         return `${verb}: ${dateString}`;
     }
 
-    public commit(githubRepoUrl: Maybe<string>, commit: Maybe<string>) {
+    public commit(githubRepoUrl: Maybe<string>, commit: Maybe<string>): string {
         if (!commit || commit === this.UNKNOWN) return '';
         return githubRepoUrl
             ? `(<${githubRepoUrl}/commits/${commit}|${commit.substr(0, 5) + '...'}>)`
@@ -60,10 +61,10 @@ export class Format {
 
         const pretty = [
             `*${version}* `,
-            this.commit(githubRepoUrl, lastCommit),
+            `*${this.commit(githubRepoUrl, lastCommit)}*`,
             this.date('[last-modified]', lastModifiedTimestamp),
-            this.date('[build]', buildTimestamp),
-            this.date('[deployed]', deployedTimestamp)
+            this.date('build', buildTimestamp),
+            this.date('deployed', deployedTimestamp)
         ]
             .filter(x => !!x && x !== '')
             .join(' ');

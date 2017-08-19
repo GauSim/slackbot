@@ -80,6 +80,7 @@ export class Environment implements IEnvironment {
                 version: appConfig.version,
                 deployedTimestamp: timestamp,
                 lastModifiedTimestamp: null, // headers["last-modified"],
+                diffingHash: `${appShortName}-${appConfig.version}-${lastCommit}`
             }));
     }
 
@@ -114,11 +115,12 @@ export class Environment implements IEnvironment {
                     env: this.env,
                     appShortName,
                     githubRepoUrl,
-                    version: version,
+                    version,
                     lastCommit: null,
                     buildTimestamp: buildTimestamp,
                     deployedTimestamp: null,
                     lastModifiedTimestamp: null,
+                    diffingHash:`${appShortName}-${rawBody}`
                 });
             });
     }
@@ -138,6 +140,7 @@ export class Environment implements IEnvironment {
                 buildTimestamp,
                 deployedTimestamp: deployTimestamp,
                 lastModifiedTimestamp: null,
+                diffingHash: `${appShortName}-${version}-${lastCommit}`
             }));
     }
 
@@ -173,6 +176,7 @@ export class Environment implements IEnvironment {
                     buildTimestamp: null,
                     deployedTimestamp: it.updated_at,
                     lastModifiedTimestamp: null,
+                    diffingHash: `${appShortName}-${it.shortversion}-${lastCommit ? lastCommit : ''}`
                 });
             });
     }

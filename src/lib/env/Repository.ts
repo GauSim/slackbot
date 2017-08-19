@@ -67,7 +67,7 @@ const appCollection = new AppCollection([
             ['DE', 'https://de.coresuite.com/mc/status'],
             ['EU', 'https://eu.coresuite.com/mc/status'],
             ['US', 'https://us.coresuite.com/mc/status'],
-            ['CN', 'https://cn.coresuite.com/mc/status'],
+            ['CN', 'https://cn.coresuite.cn/mc/status'],
             ['SANDBOX', 'https://sb.dev.coresuite.com/mc/status']
         ])
     },
@@ -84,7 +84,7 @@ const appCollection = new AppCollection([
             ['DE', 'https://de.coresuite.com/dc/status'],
             ['EU', 'https://eu.coresuite.com/dc/status'],
             ['US', 'https://us.coresuite.com/dc/status'],
-            ['CN', 'https://cn.coresuite.com/dc/status'],
+            ['CN', 'https://cn.coresuite.cn/dc/status'],
             ['SANDBOX', 'https://sb.dev.coresuite.com/dc/status']
         ] as [EnvName, string][])
     },
