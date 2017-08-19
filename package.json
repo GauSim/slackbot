@@ -1,5 +1,5 @@
 {
-  "name": "delete-me",
+  "name": "version-bot",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -37,8 +37,8 @@
     "nodemon": "^1.11.0",
     "rimraf": "^2.6.1",
     "sinon": "^1.17.6",
-    "ts-node": "^3.0.2",
-    "typescript": "^2.2.2",
+    "ts-node": "^3.3.0",
+    "typescript": "^2.5.1",
     "unit.js": "^2.0.0"
   }
 }

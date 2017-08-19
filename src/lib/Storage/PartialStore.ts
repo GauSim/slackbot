@@ -3,9 +3,9 @@ import { IBaseStorage } from './BaseStorage';
 export default class PartialStore implements IBaseStorage {
 
   get: <T>(key: string) => Promise<T>;
-  save: <T>(key: string, value: any) => Promise<T>;
-  delete: <T>(key: string) => Promise<T>;
-  all: <T>() => Promise<T[]>;
+  save: <T>(key: string, value: T) => Promise<string>;
+  delete: <T>(key: string) => Promise<string>;
+  all: <T>() => Promise<T[] | null>;
   keys: () => Promise<string[]>;
   matchKey: (key: string) => Promise<string[]>;
 

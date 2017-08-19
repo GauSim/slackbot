@@ -17,22 +17,22 @@ interface IRedisClient {
 
 export interface IBaseStorage {
   get: <T>(key: string) => Promise<T>;
-  save: <T>(key: string, value: any) => Promise<T>;
-  delete: <T>(key: string) => Promise<T>;
-  all: <T>(partial?: string) => Promise<T[]>;
+  save: <T>(key: string, v: T) => Promise<string>;
+  delete: <T>(key: string) => Promise<string>;
+  all: <T>(partial?: string) => Promise<T[] | null>;
   keys: () => Promise<string[]>;
   matchKey: (key: string) => Promise<string[]>;
 }
 
 export default class BaseStorage implements IBaseStorage {
 
-  get: (key: string) => Promise<Object>;
-  save: (key: string, value: any) => Promise<Object>;
-  delete: (key: string) => Promise<Object>;
+  get: <T>(key: string) => Promise<T>;
+  save: <T>(key: string, v: T) => Promise<string>;
+  delete: <T>(key: string) => Promise<string>;
   keys: () => Promise<string[]>;
   matchKey: (key: string) => Promise<string[]>;
   kill: () => void;
-  all: (partial?: string) => Promise<Object[]>;
+  all: any
   clearAll: (partial?: string) => Promise<Object[]>;
   allAsMap: () => Promise<any>;
 
@@ -40,14 +40,14 @@ export default class BaseStorage implements IBaseStorage {
 
     const _client: IRedisClient = redis.createClient(uri) as any as IRedisClient;
 
-    this.get = k => _client.getAsync(k)
+    this.get = <T>(key) => _client.getAsync(key)
       .then(data => {
 
         if (data === EMPTY_BLOB || data === null) {
-          throw { displayName: 'NotFound', key: k };
+          throw { displayName: 'NotFound', key: key };
         }
         else {
-          return JSON.parse(data);
+          return JSON.parse(data) as T;
         }
 
       });
@@ -57,7 +57,7 @@ export default class BaseStorage implements IBaseStorage {
 
     this.delete = k => _client.setAsync(k, EMPTY_BLOB);
 
-    this.all = (partial: string | null = null) => this.keys()
+    this.all = <T>(partial: string | null = null) => this.keys()
       .then(keys => {
         const work = keys
           .filter(key => (partial === null) || key.indexOf(partial) > -1) // select partition

@@ -44,7 +44,11 @@ class WebhookService {
 
   getAll() {
     return this.hooks.all<{ name: string }>().then(hookList => {
-      return hookList.length > 0 ? `found ${hookList.length} hooks:\n` + hookList.map(hook => hookToUrl(hook.name)).join('\n') : 'no hooks found';
+      return hookList
+        ? hookList.length > 0
+          ? `found ${hookList.length} hooks:\n` + hookList.map(hook => hookToUrl(hook.name)).join('\n')
+          : 'no hooks found'
+        : 'error';
     });
   }
 
