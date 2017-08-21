@@ -101,7 +101,7 @@ const appCollection = new AppCollection([
             ['DE', 'https://de.coresuite.com/admin/status'],
             ['EU', 'https://eu.coresuite.com/admin/status'],
             ['US', 'https://us.coresuite.com/admin/status'],
-            ['CN', 'https://cn.coresuite.com/admin/status'],
+            ['CN', 'https://cn.coresuite.cn/admin/status'],
             ['SANDBOX', 'https://sb.dev.coresuite.com/admin/status']
         ])
     },
