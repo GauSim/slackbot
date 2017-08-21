@@ -32,7 +32,7 @@
     "@types/moment-timezone": "^0.2.34",
     "@types/node": "^7.0.12",
     "@types/redis": "^0.12.36",
-    "@types/request-promise-native": "^1.0.2",
+    "@types/request-promise-native": "^1.0.6",
     "mocha": "^3.2.0",
     "nodemon": "^1.11.0",
     "rimraf": "^2.6.1",
