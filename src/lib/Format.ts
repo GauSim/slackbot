@@ -5,11 +5,10 @@ import { IEnvResponse, EnvName } from './models/Environment';
 export interface IFromatParams {
     env: [EnvName, string, Maybe<{ [key: string]: string }>];
     appShortName: string;
-    version: Maybe<string>;
+    versions: Maybe<string>[];
     lastCommit: Maybe<string>;
     githubRepoUrl: Maybe<string>;
-    buildTimestamp: Maybe<string | moment.Moment>;
-    lastModifiedTimestamp: Maybe<string | moment.Moment>;
+    buildTimestamps: Maybe<string | moment.Moment>[];
     deployedTimestamp: Maybe<string | moment.Moment>;
     diffingHash: string;
 }
@@ -57,22 +56,19 @@ export class Format {
 
     public mixinResultLine(response: IFromatParams): IEnvResponse {
 
-        const { lastCommit, githubRepoUrl, buildTimestamp, lastModifiedTimestamp, deployedTimestamp, env, appShortName, version } = response;
+        const { lastCommit, githubRepoUrl, buildTimestamps, deployedTimestamp, env, appShortName, versions } = response;
 
         const pretty = [
-            `*${version}*`,
+            versions.map(it => `*${it}*`).join(','),
             `*${this.commit(githubRepoUrl, lastCommit)}*`,
-            this.date('[last-modified]', lastModifiedTimestamp),
-            this.date('build', buildTimestamp),
+            buildTimestamps.map(it => this.date('build', it)).join(','),
             this.date('deployed', deployedTimestamp)
-        ]
-            .filter(x => !!x && x !== '')
-            .join(' ');
+        ].filter(x => !!x).join(' ');
 
         const [envName, url] = env;
 
         const resultLine = ("`" + envName + "`") + ` | <${url}|${appShortName.toUpperCase()}> → ${pretty}`;
 
-        return Object.assign({}, response, { resultLine, hasError: false });
+        return { ...response, resultLine, hasError: false };
     }
 }

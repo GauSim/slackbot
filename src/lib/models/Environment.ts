@@ -16,9 +16,7 @@ export type EnvName = 'ALL'
     | 'PROD-QA-EU'
     | 'PROD-QA-US'
     | 'SANDBOX'
-    | 'NIGHTLY'
-    | 'BETA'
-    | 'STORE'
+
 
 export type EnvFilter = (env: Environment) => boolean;
 
@@ -47,6 +45,8 @@ export class Environment implements IEnvironment {
         switch (this.app.type) {
             case 'WEBAPP':
                 return this.fromWebapp(get, format);
+            case 'WEBAPP_EMBBEDDED':
+                return this.fromEmbeddedWebapp(get, format);
             case 'FACADE':
                 return this.fromFacade(get, format);
             case 'CLOUD':
@@ -58,9 +58,35 @@ export class Environment implements IEnvironment {
         }
     }
 
+
+    private fromEmbeddedWebapp(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
+        const { appShortName, githubRepoUrl } = this.app;
+        const [frontEndVersionInfo, backEndVersionInfo] = this.app.getVersionInfo(this.env)
+        const deploymentInfo = this.app.getDeploymentInfo(this.env);
+        return Promise
+            .all([
+                get(frontEndVersionInfo)
+                    .then(it => JSON.parse(it) as { lastCommit: string; buildTimestamp: string; appConfig: { version: string; } }),
+                get(deploymentInfo)
+                    .then(it => JSON.parse(it)) as Promise<{ timestamp: null | string }>,
+                get(backEndVersionInfo)
+                    .then(rawBody => JSON.parse(rawBody) as { lastCommit: string; buildTimestamp: string; deployTimestamp: string, version: string })
+            ])
+            .then(([frontEnd, { timestamp }, backEnd]) => format.mixinResultLine({
+                env: this.env,
+                appShortName,
+                githubRepoUrl,
+                lastCommit: frontEnd.lastCommit === backEnd.lastCommit ? frontEnd.lastCommit : 'WARNING F-HASH != B-HASH',
+                buildTimestamps: [frontEnd.buildTimestamp, backEnd.buildTimestamp],
+                versions: [frontEnd.appConfig.version, backEnd.version],
+                deployedTimestamp: timestamp,
+                diffingHash: `${appShortName}-${frontEnd.appConfig.version}-${frontEnd.lastCommit}-${backEnd.version}-${backEnd.lastCommit}`
+            }));
+    }
+
     private fromWebapp(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
         const { appShortName, githubRepoUrl } = this.app;
-        const versionInfo = this.app.getVersionInfo(this.env)
+        const [versionInfo] = this.app.getVersionInfo(this.env)
         const deploymentInfo = this.app.getDeploymentInfo(this.env);
         return Promise
             .all([
@@ -76,17 +102,16 @@ export class Environment implements IEnvironment {
                 appShortName,
                 githubRepoUrl,
                 lastCommit,
-                buildTimestamp,
-                version: appConfig.version,
+                buildTimestamps: [buildTimestamp],
+                versions: [appConfig.version],
                 deployedTimestamp: timestamp,
-                lastModifiedTimestamp: null, // headers["last-modified"],
                 diffingHash: `${appShortName}-${appConfig.version}-${lastCommit}`
             }));
     }
 
     private fromCloud(get: httpMiddleWare, format: Format) {
         const { appShortName, githubRepoUrl } = this.app;
-        const versionInfo = this.app.getVersionInfo(this.env);
+        const [versionInfo] = this.app.getVersionInfo(this.env);
         return get(versionInfo)
             .then(rawBody => {
 
@@ -115,19 +140,18 @@ export class Environment implements IEnvironment {
                     env: this.env,
                     appShortName,
                     githubRepoUrl,
-                    version,
+                    versions: [version],
                     lastCommit: null,
-                    buildTimestamp: buildTimestamp,
+                    buildTimestamps: [buildTimestamp],
                     deployedTimestamp: null,
-                    lastModifiedTimestamp: null,
-                    diffingHash:`${appShortName}-${rawBody}`
+                    diffingHash: `${appShortName}-${rawBody}`
                 });
             });
     }
 
     private fromFacade(get: httpMiddleWare, format: Format) {
         const { appShortName, githubRepoUrl } = this.app;
-        const versionInfo = this.app.getVersionInfo(this.env)
+        const [versionInfo] = this.app.getVersionInfo(this.env)
         const deploymentInfo = this.app.getDeploymentInfo(this.env);
         return get(versionInfo)
             .then(rawBody => JSON.parse(rawBody) as { lastCommit: string; buildTimestamp: string; deployTimestamp: string, version: string })
@@ -135,18 +159,17 @@ export class Environment implements IEnvironment {
                 env: this.env,
                 appShortName,
                 githubRepoUrl,
-                version,
+                versions: [version],
                 lastCommit,
-                buildTimestamp,
+                buildTimestamps: [buildTimestamp],
                 deployedTimestamp: deployTimestamp,
-                lastModifiedTimestamp: null,
                 diffingHash: `${appShortName}-${version}-${lastCommit}`
             }));
     }
 
     private fromHockeyApp(get: httpMiddleWare, format: Format) {
         const { appShortName, githubRepoUrl } = this.app;
-        const versionInfo = this.app.getVersionInfo(this.env)
+        const [versionInfo] = this.app.getVersionInfo(this.env)
         return get(versionInfo)
             .then(rawBody => {
 
@@ -172,10 +195,9 @@ export class Environment implements IEnvironment {
                     appShortName,
                     lastCommit,
                     githubRepoUrl,
-                    version: it.shortversion,
-                    buildTimestamp: null,
+                    versions: [it.shortversion],
+                    buildTimestamps: [],
                     deployedTimestamp: it.updated_at,
-                    lastModifiedTimestamp: null,
                     diffingHash: `${appShortName}-${it.shortversion}-${lastCommit ? lastCommit : ''}`
                 });
             });

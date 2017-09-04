@@ -48,12 +48,11 @@ class WhatsOnline {
             return {
                 env,
                 appShortName: app.appShortName,
-                version: null,
+                versions: [],
                 lastCommit: null,
                 githubRepoUrl: null,
-                buildTimestamp: null,
+                buildTimestamps: [],
                 deployedTimestamp: null,
-                lastModifiedTimestamp: null,
                 resultLine: ("`" + envName + "`") + ` | <${url}|${app.appShortName}> → *looks offline* (${error instanceof Error ? error.message : ''})`,
                 hasError: true,
                 diffingHash:`${Date.now()}-${app.appShortName}-${envName}`
@@ -140,7 +139,7 @@ const actions = [
             Promise.all(work)
                 .then(results => {
                     const grpByAppHash = _.chain(results)
-                        .filter(it => !!it.version && !it.hasError) // dont show errors
+                        .filter(it => !!it.versions.join(',') && !it.hasError) // dont show errors
                         .groupBy(it => it.diffingHash); 
 
 
@@ -163,8 +162,8 @@ const actions = [
                         : (grpByAppHash as any)
                             .map((list: IEnvResponse[]) => {
                                 const versionStr = list[0].lastCommit
-                                    ? `${list[0].version} ${new Format().commit(list[0].githubRepoUrl, list[0].lastCommit)}`
-                                    : list[0].version
+                                    ? `${list[0].versions.join(',')} ${new Format().commit(list[0].githubRepoUrl, list[0].lastCommit)}`
+                                    : list[0].versions.join(',')
 
                                 return '`' + list[0].appShortName + '`' + ` | *${versionStr}* → ` + list.map(it => '`' + it.env[0] + '`').join(' == ');
                             })

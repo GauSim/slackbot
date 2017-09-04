@@ -1,35 +1,51 @@
 import _ = require('lodash');
 import Config from '../config';
-import { IApplication, Application, AppName } from '../models/Application';
+import { IApplication, Application, AppName, AppType } from '../models/Application';
 import { Maybe } from '../models/Maybe';
 import { AppCollection } from './AppCollection';
 import { EnvFilter, Environment, EnvName } from '../models/Environment';
 
-const withSecret = (secrets: string, env: EnvName): [EnvName, string, Maybe<{ [h: string]: string }>] => {
-    return (secrets.split(',')
+const withSecret = (secrets: string, env: 'NIGHTLY' | 'BETA' | 'STORE', alias: EnvName): [EnvName, string, Maybe<{ [h: string]: string }>] => {
+    const [realName, url, header] = (secrets.split(',')
         .map(line => {
             const [envName, appId, token] = line.split(':');
             return [envName, `https://rink.hockeyapp.net/api/2/apps/${appId}/app_versions/`, { 'X-HockeyAppToken': token }];
         })
-        .find(([itsName]) => itsName === env)
-        || [env, 'https://rink.hockeyapp.net/api/2/apps/${appId}/app_versions/']) as [EnvName, string, Maybe<{ [h: string]: string }>];
+        .find(([itsName]) => itsName === env) || [env, '????']) as [EnvName, string, Maybe<{ [h: string]: string }>];
+
+    return [alias, url, header];
 }
+
+
+const FSM_WEB_APP_ENV_HOSTS = (): [EnvName, string][] => [
+    ['ET', 'https://et.coresystems.net'],
+    ['QT', 'https://qt.coresystems.net'],
+    ['PT', 'https://pt.coresystems.net'],
+    ['SANDBOX', 'https://sb.coresystems.net'],
+    ['PROD', 'https://apps.coresystems.net'],
+    ['DE', 'https://de.coresystems.net'],
+    ['EU', 'https://eu.coresystems.net'],
+    ['CN', 'https://cn.coresystems.net'],
+    ['US', 'https://us.coresystems.net'],
+    ['UT', 'https://ut.coresystems.net'],
+    ['PREVIEW', 'https://preview.coresystems.net']
+] as [EnvName, string][];
 
 const appCollection = new AppCollection([
     {
         appShortName: 'ANDROID',
         githubRepoUrl: 'https://github.com/coresystemsFSM/android-coresuite',
-        type: 'ANDROID',
+        type: 'ANDROID' as AppType,
         envMap: [
-            withSecret(Config.androidSecrets, 'NIGHTLY'),
-            withSecret(Config.androidSecrets, 'BETA'),
-            withSecret(Config.androidSecrets, 'STORE')
+            withSecret(Config.androidSecrets, 'NIGHTLY', 'ET'),
+            withSecret(Config.androidSecrets, 'BETA', 'QT'),
+            withSecret(Config.androidSecrets, 'STORE', 'PROD')
         ]
     },
     {
         appShortName: 'FACADE',
         githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
-        type: 'FACADE',
+        type: 'FACADE' as AppType,
         envMap: ([
             ['ET', 'https://et.dev.coresuite.com/portal/status'],
             ['UT', 'https://et.dev.coresuite.com/portal/status'],
@@ -40,15 +56,14 @@ const appCollection = new AppCollection([
             ['CN', 'https://cn.coresystems.net/portal/status'],
             ['EU', 'https://eu.coresystems.net/portal/status'],
             ['US', 'https://us.coresystems.net/portal/status'],
-            //  ['PROD-QA-EU', 'https://prod-qa-eu.coresystems.net/portal/status'],
-            //  ['PROD-QA-US', 'https://prod-qa-us.coresystems.net/portal/status'],
-            ['SANDBOX', 'https://sb.dev.coresuite.com/portal/status']
+            ['SANDBOX', 'https://sb.dev.coresuite.com/portal/status'],
+            ['PREVIEW', 'https://preview.coresystems.net/portal/status']
         ])
     },
     {
         appShortName: 'DS',
         githubRepoUrl: 'https://github.com/coresystemsFSM/cloud',
-        type: 'CLOUD',
+        type: 'CLOUD' as AppType,
         envMap: [
             ['PROD', 'https://ds.coresuite.com/ds/status'],
             ['EU', 'https://eu.coresuite.com/ds/status']
@@ -57,7 +72,7 @@ const appCollection = new AppCollection([
     {
         appShortName: 'MC',
         githubRepoUrl: 'https://github.com/coresystemsFSM/cloud',
-        type: 'CLOUD',
+        type: 'CLOUD' as AppType,
         envMap: ([
             ['ET', 'https://et.dev.coresuite.com/mc/status'],
             ['UT', 'https://ut.dev.coresuite.com/mc/status'],
@@ -74,7 +89,7 @@ const appCollection = new AppCollection([
     {
         appShortName: 'DC',
         githubRepoUrl: 'https://github.com/coresystemsFSM/cloud',
-        type: 'CLOUD',
+        type: 'CLOUD' as AppType,
         envMap: ([
             ['ET', 'https://et.dev.coresuite.com/dc/status'],
             ['UT', 'https://ut.dev.coresuite.com/dc/status'],
@@ -91,7 +106,7 @@ const appCollection = new AppCollection([
     {
         appShortName: 'ADMIN',
         githubRepoUrl: 'https://github.com/coresystemsFSM/admin',
-        type: 'CLOUD',
+        type: 'CLOUD' as AppType,
         envMap: ([
             ['ET', 'https://et.dev.coresuite.com/admin/status'],
             ['UT', 'https://ut.dev.coresuite.com/admin/status'],
@@ -108,7 +123,7 @@ const appCollection = new AppCollection([
     {
         appShortName: 'NOW',
         githubRepoUrl: 'https://github.com/coresystemsFSM/now',
-        type: 'WEBAPP',
+        type: 'WEBAPP' as AppType,
         envMap: ([
             ['ET', 'https://et.now.gl'],
             ['QT', 'https://qt.now.gl'],
@@ -126,29 +141,25 @@ const appCollection = new AppCollection([
         ['CO', 'configuration'],
         ['MAP', 'map'],
         ['MP', 'marketplace'],
-        ['SU', 'sign-up'],
+        ['SU', 'sign-up']
     ] as [AppName, string][])
         .map(([appShortName, path]) => ({
             appShortName,
-            type: 'WEBAPP',
+            type: 'WEBAPP' as AppType,
             githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
-            envMap: ([
-                ['ET', 'https://et.coresystems.net'],
-                ['QT', 'https://qt.coresystems.net'],
-                ['PT', 'https://pt.coresystems.net'],
-                ['SANDBOX', 'https://sb.coresystems.net'],
-                ['PROD', 'https://apps.coresystems.net'],
-                ['DE', 'https://de.coresystems.net'],
-                ['EU', 'https://eu.coresystems.net'],
-                ['CN', 'https://cn.coresystems.net'],
-                ['US', 'https://us.coresystems.net'],
-                ['UT', 'https://ut.coresystems.net'],
-                ['PREVIEW','https://preview.coresystems.net']
-                // ['PROD-QA-EU', 'https://prod-qa-eu.coresystems.net'],
-                // ['PROD-QA-US', 'https://prod-qa-us.coresystems.net']
-            ] as [EnvName, string][])
+            envMap: FSM_WEB_APP_ENV_HOSTS()
                 .reduce((list, [env, url]) => [...list, [env, `${url}/${path}`] as [EnvName, string]], [] as [EnvName, string][]),
-        }))
+        })),
+
+    ...([
+        ['STORE', 'store']
+    ]).map(([appShortName, path]) => ({
+        appShortName,
+        type: 'WEBAPP_EMBBEDDED' as AppType,
+        githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
+        envMap: FSM_WEB_APP_ENV_HOSTS()
+            .reduce((list, [env, url]) => [...list, [env, `${url}/${path}`] as [EnvName, string]], [] as [EnvName, string][]),
+    }))
 ] as IApplication[]);
 
 
@@ -174,7 +185,7 @@ export class Repository {
                     : textInput.split(' '))
                     .map(it => it.trim())
                     .filter(it => !!it && (allPossibleMatches.map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1))
-                    .reduce((list, it) => [...list, ...([['BETA', 'QT'], ['STORE', 'PROD'], ['NIGHTLY', 'ET']] // fill in aliases
+                    .reduce((list, it) => [...list, ...([['NIGHTLY', 'ET']] // fill in aliases 
                         .find(list => list.indexOf((it).toUpperCase()) > -1) || [it])], [] as string[])
 
             : allPossibleMatches;

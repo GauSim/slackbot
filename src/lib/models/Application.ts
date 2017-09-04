@@ -15,9 +15,11 @@ export type AppName = 'FACADE'
     | 'PM'
     | 'DL'
     | 'CO'
-    | 'MAP';
+    | 'MAP'
+    | 'STORE';
 
 export type AppType = 'WEBAPP'
+    | 'WEBAPP_EMBBEDDED'
     | 'CLOUD'
     | 'FACADE'
     | 'ANDROID';
@@ -41,14 +43,16 @@ export class Application implements IApplication {
         this.envMap = obj.envMap;
     }
 
-    getVersionInfo([env, url, headers]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
+    getVersionInfo([env, url, headers]: [EnvName, string, Maybe<{ [key: string]: string }>]): [IRequestOptions,Maybe<IRequestOptions>] {
         switch (this.type) {
             case 'WEBAPP':
-                return { url: `${url}/appconfig.json` };
+                return [{ url: `${url}/appconfig.json` }, null];
+            case 'WEBAPP_EMBBEDDED':
+                return [{ url: `${url}/appconfig.json` }, { url: `${url}/portal/status` }];
             case 'ANDROID':
-                return { url, headers };
+                return [{ url, headers }, null];
             default:
-                return { url };
+                return [{ url }, null];
         }
     }
 
