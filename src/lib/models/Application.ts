@@ -59,6 +59,7 @@ export class Application implements IApplication {
     getDeploymentInfo([env, url]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
         switch (this.type) {
             case 'WEBAPP':
+            case 'WEBAPP_EMBBEDDED':
                 return { url: `${url}/deployed.json` };
             default:
                 return null;
