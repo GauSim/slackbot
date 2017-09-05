@@ -12,7 +12,8 @@
     "prebuild": "npm run clean",
     "build": "tsc -p . --pretty",
     "build:watch": "npm run build -- -w",
-    "clean": "rimraf release/*"
+    "clean": "rimraf release/*",
+    "rt": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/rt.ts"
   },
   "author": "",
   "license": "ISC",
@@ -24,9 +25,13 @@
     "moment-timezone": "^0.5.10",
     "redis": "^2.6.3",
     "request": "^2.79.0",
-    "request-promise-native": "^1.0.3"
+    "request-promise-native": "^1.0.3",
+    "rxjs": "^5.4.3",
+    "socket.io-client": "^2.0.3"
   },
   "devDependencies": {
+    "@reactivex/rxjs": "^5.4.3",
+    "@types/socket.io-client": "^1.4.30",
     "@types/bluebird": "^3.5.2",
     "@types/lodash": "^4.14.65",
     "@types/moment-timezone": "^0.2.34",
