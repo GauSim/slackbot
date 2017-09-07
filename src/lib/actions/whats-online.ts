@@ -49,7 +49,7 @@ class WhatsOnline {
                 env,
                 appShortName: app.appShortName,
                 versions: [],
-                lastCommit: null,
+                lastCommits: [],
                 githubRepoUrl: null,
                 buildTimestamps: [],
                 deployedTimestamp: null,
@@ -140,16 +140,16 @@ const actions = [
                 .then(results => {
                     const grpByAppHash = _.chain(results)
                         .filter(it => !!it.versions.join(',') && !it.hasError) // dont show errors
-                        .groupBy(it => it.diffingHash); 
+                        .groupBy(it => it.diffingHash);
 
 
-                    // do a better full diff! 
+                    // do a better full diff!
                     const allAreTheSame = false
                     /*&& grpByAppHash
                         .keys()
                         .value().length ===
                         [
-                            ...Object.keys(FRONTEND_APPS), 
+                            ...Object.keys(FRONTEND_APPS),
                             ENV_NAME_FACADE,
                             ENV_NAME_DATA_CLOUD,
                             ENV_NAME_MASTER_CLOUD,
@@ -161,8 +161,8 @@ const actions = [
                         ? '... looks the same to me →' + toCheck.map(it => '`' + it + '`').join(' == ')
                         : (grpByAppHash as any)
                             .map((list: IEnvResponse[]) => {
-                                const versionStr = list[0].lastCommit
-                                    ? `${list[0].versions.join(',')} ${new Format().commit(list[0].githubRepoUrl, list[0].lastCommit)}`
+                              const versionStr = list[0].lastCommits && list[0].lastCommits.length
+                                ? `${list[0].versions.join(',')} ${list[0].lastCommits.map(it => new Format().commit(list[0].githubRepoUrl, it)).join(',')}`
                                     : list[0].versions.join(',')
 
                                 return '`' + list[0].appShortName + '`' + ` | *${versionStr}* → ` + list.map(it => '`' + it.env[0] + '`').join(' == ');
