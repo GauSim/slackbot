@@ -22,7 +22,8 @@ export type EnvFilter = (env: Environment) => boolean;
 
 export interface IRequestOptions {
   url: string;
-  headers?: Maybe<{ [h: string]: string }>
+  headers?: Maybe<{ [h: string]: string }>;
+  token?: Maybe<string>;
 }
 
 export interface IEnvResponse extends IFromatParams {

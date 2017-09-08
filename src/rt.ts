@@ -1,62 +1,46 @@
-import io = require('socket.io-client');
-import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/of';
-import 'rxjs/add/operator/map';
 
-const backendHost = 'https://et.dev.coresuite.com';
+import moment = require('moment-timezone');
+import { Repository } from "./lib/env/Repository";
+import { RealTime, ApplicationSocketEvent } from "./lib/models/RealTime";
+import { Observable } from "rxjs/Observable";
 
+const down = new Map<string, { time: moment.Moment }>([]);
 
-const cloudHost = 'https://et.dev.coresuite.com';
-const formattedAuthToken = '### token ###';
-const accountName = '### account ###';
-const userAccountName = '### user ###';
-const selectedCompanyName = '### company ###';
-const clientIdentifier = 'eybot';
-const clientVersion = '0.0.1';
+const toHash = (it$: ApplicationSocketEvent) => `${it$.env.app.appShortName}|${it$.env.env[0]}`;
 
-function connectToSocket() {
-
-  const token = Buffer.from(`account=${accountName}`
-    + `&user=${userAccountName}`
-    + `&company=${selectedCompanyName}`
-    + `&clientIdentifier=${clientIdentifier}`
-    + `&clientVersion=${clientVersion}`
-    + `&cloudHost=${cloudHost}`
-    + `&authorization=${formattedAuthToken}`).toString('base64');
-
-  return new Observable<{ type: 'connect' | 'disconnect' | 'event' | 'ping' | 'pong', payload: any }>((observer) => {
-
-    const socket = io(backendHost, {
-      path: `/portal/realtime`,
-      query: `token=${token}`,
-      autoConnect: true,
-      reconnectionAttempts: 3,
-      transports: ['websocket']
-    });
-
-    socket
-      .on('connect', () => observer.next({ type: 'connect', payload: null }))
-      .on('event', payload => observer.next({ type: 'event', payload }))
-      .on('ping', payload => observer.next({ type: 'ping', payload }))
-      .on('pong', latencyMs => observer.next({ type: 'pong', payload: latencyMs }))
-      .on('reconnect', n => observer.next({ type: 'disconnect', payload: n }))
-      .on('disconnect', () => observer.next({ type: 'disconnect', payload: null }))
-      .on('reconnect_error', e => observer.error(e))
-      .on('connect_timeout', e => observer.error(e))
-      .on('connect_error', e => observer.error(e))
-      .on('error', e => observer.error(e))
-
-    return () => {
-      // cleanup
-      socket.disconnect();
-    }
-  });
+const wentOffline = (hash: string, it: ApplicationSocketEvent) => {
+  down.set(hash, { time: moment(new Date()) });
+  return `[${hash}] just went down ...`;
 }
 
+const stillOffline = (hash: string, it: ApplicationSocketEvent) => {
+  return `[${hash}] is still offline ...`;
+}
 
-connectToSocket().subscribe(
-  d => console.log(d),
-  e => console.error(e)
-)
+const wentOnline = (hash: string, it: ApplicationSocketEvent) => {
+  const { time } = down.get(hash) || { time: undefined };
+  down.delete(hash);
+  return `[${hash}] seems to be online again ${time ? ', was offline for ' + (moment.duration(time.diff(new Date())).asSeconds() * -1) + 'sec.' : ''}  ...`;
+};
+
+export const stream$ = Repository.filter(({ env, app }) => ['FACADE'].indexOf(app.type) !== -1) // , 'WEBAPP_EMBBEDDED' // todo
+  .map(it => RealTime.getStream(it))
+  .reduce((all$, current$) => all$.merge(current$))
+  .map(it => {
+    const hash = toHash(it);
+    return {
+      ...it,
+      msg: it.type === 'ERROR'
+        ? down.has(hash)
+          ? stillOffline(hash, it)
+          : wentOffline(hash, it)
+        : down.has(hash)
+          ? wentOnline(hash, it)
+          : undefined
+    }
+  })
+  .filter(it => !!it.msg)
+//.forEach(it => console.log(it.msg))
+
 
 console.log('runnig');

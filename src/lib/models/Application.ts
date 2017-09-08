@@ -2,73 +2,103 @@ import { Maybe } from './Maybe';
 import { Environment, EnvFilter, EnvName, IRequestOptions } from './Environment';
 
 export type AppName = 'FACADE'
-    | 'NOW'
-    | 'ADMIN'
-    | 'DC'
-    | 'MC'
-    | 'DS'
-    | 'WFM'
-    | 'AR'
-    | 'MDM'
-    | 'KM'
-    | 'SM'
-    | 'PM'
-    | 'DL'
-    | 'CO'
-    | 'MAP'
-    | 'STORE';
+  | 'NOW'
+  | 'ADMIN'
+  | 'DC'
+  | 'MC'
+  | 'DS'
+  | 'WFM'
+  | 'AR'
+  | 'MDM'
+  | 'KM'
+  | 'SM'
+  | 'PM'
+  | 'DL'
+  | 'CO'
+  | 'MAP'
+  | 'STORE';
 
 export type AppType = 'WEBAPP'
-    | 'WEBAPP_EMBBEDDED'
-    | 'CLOUD'
-    | 'FACADE'
-    | 'ANDROID';
+  | 'WEBAPP_EMBBEDDED'
+  | 'CLOUD'
+  | 'FACADE'
+  | 'ANDROID';
 
 export interface IApplication {
-    appShortName: AppName;
-    githubRepoUrl: string;
-    type: AppType;
-    envMap: [EnvName, string, Maybe<{ [key: string]: string }>][];
+  appShortName: AppName;
+  githubRepoUrl: string;
+  type: AppType;
+  envMap: [EnvName, string, Maybe<{ [key: string]: string }>][];
 };
 
 export class Application implements IApplication {
-    appShortName: AppName;
-    githubRepoUrl: string;
-    type: AppType;
-    envMap: [EnvName, string, Maybe<{ [key: string]: string }>][];
-    constructor(obj: IApplication) {
-        this.appShortName = obj.appShortName;
-        this.githubRepoUrl = obj.githubRepoUrl;
-        this.type = obj.type;
-        this.envMap = obj.envMap;
-    }
+  appShortName: AppName;
+  githubRepoUrl: string;
+  type: AppType;
+  envMap: [EnvName, string, Maybe<{ [key: string]: string }>][];
+  constructor(obj: IApplication) {
+    this.appShortName = obj.appShortName;
+    this.githubRepoUrl = obj.githubRepoUrl;
+    this.type = obj.type;
+    this.envMap = obj.envMap;
+  }
 
-    getVersionInfo([env, url, headers]: [EnvName, string, Maybe<{ [key: string]: string }>]): [IRequestOptions,Maybe<IRequestOptions>] {
-        switch (this.type) {
-            case 'WEBAPP':
-                return [{ url: `${url}/appconfig.json` }, null];
-            case 'WEBAPP_EMBBEDDED':
-                return [{ url: `${url}/appconfig.json` }, { url: `${url}/portal/status` }];
-            case 'ANDROID':
-                return [{ url, headers }, null];
-            default:
-                return [{ url }, null];
-        }
-    }
+  getRealTimeInfo([env, url]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
 
-    getDeploymentInfo([env, url]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
-        switch (this.type) {
-            case 'WEBAPP':
-            case 'WEBAPP_EMBBEDDED':
-                return { url: `${url}/deployed.json` };
-            default:
-                return null;
-        }
-    }
+    const cloudHost = '### cloudHost ###';
+    const formattedAuthToken = '### token ###';
+    const accountName = '### account ###';
+    const userAccountName = '### user ###';
+    const selectedCompanyName = '### company ###';
+    const clientIdentifier = 'eybot';
+    const clientVersion = '0.0.1';
 
-    filterEnvironments(envFilter: EnvFilter): Environment[] {
-        return this.envMap
-            .map(it => new Environment(it, this))
-            .filter(envFilter)
+    const token = Buffer.from(`account=${accountName}`
+      + `&user=${userAccountName}`
+      + `&company=${selectedCompanyName}`
+      + `&clientIdentifier=${clientIdentifier}`
+      + `&clientVersion=${clientVersion}`
+      + `&cloudHost=${cloudHost}`
+      + `&authorization=${formattedAuthToken}`).toString('base64');
+
+    switch (this.type) {
+      case 'FACADE':
+        return { url, token }
+        case 'WEBAPP_EMBBEDDED':
+        return { url, token }
+      default:
+        return null;
     }
+  }
+
+  getVersionInfo([env, url, headers]: [EnvName, string, Maybe<{ [key: string]: string }>]): [IRequestOptions, Maybe<IRequestOptions>] {
+    switch (this.type) {
+      case 'WEBAPP':
+        return [{ url: `${url}/appconfig.json` }, null];
+      case 'WEBAPP_EMBBEDDED':
+        return [{ url: `${url}/appconfig.json` }, { url: `${url}/portal/status` }];
+      case 'ANDROID':
+        return [{ url, headers }, null];
+      case 'FACADE':
+        return [{ url: `${url}/portal/status` }, null];
+      default:
+        return [{ url }, null];
+    }
+  }
+
+  getDeploymentInfo([env, url]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
+    switch (this.type) {
+      case 'WEBAPP':
+      case 'WEBAPP_EMBBEDDED':
+        return { url: `${url}/deployed.json` };
+      default:
+        return null;
+    }
+  }
+
+  filterEnvironments(envFilter: EnvFilter): Environment[] {
+    return this.envMap
+      .map(it => new Environment(it, this))
+      .filter(envFilter)
+  }
 }

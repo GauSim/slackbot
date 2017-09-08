@@ -36,7 +36,7 @@ export default class BaseStorage implements IBaseStorage {
   clearAll: (partial?: string) => Promise<Object[]>;
   allAsMap: () => Promise<any>;
 
-  constructor(uri) {
+  constructor(uri: string) {
 
     const _client: IRedisClient = redis.createClient(uri) as any as IRedisClient;
 

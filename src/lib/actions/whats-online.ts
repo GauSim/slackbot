@@ -9,13 +9,14 @@ import { Maybe } from '../models/Maybe';
 import { Environment, IEnvResponse, httpMiddleWare, EnvName } from '../models/Environment';
 
 interface IMessage { text: string, match: [string] };
+const removeMatch = (message: IMessage): string => message.text
+  .replace(message.match[0], '')
+  .trim()
+  .toUpperCase();
 
 const NO_VERSION_NUMBER_FOUND = 'no version number found';
 
-const removeMatch = (message: IMessage): string => message.text
-    .replace(message.match[0], '')
-    .trim()
-    .toUpperCase();
+
 
 
 class WhatsOnline {

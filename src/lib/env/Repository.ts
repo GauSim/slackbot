@@ -62,16 +62,16 @@ const appCollection = new AppCollection([
     githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
     type: 'FACADE' as AppType,
     envMap: ([
-      ['ET', 'https://et.dev.coresuite.com/portal/status'],
-      ['UT', 'https://et.dev.coresuite.com/portal/status'],
-      ['QT', 'https://qt.dev.coresuite.com/portal/status'],
-      ['PT', 'https://pt.dev.coresuite.com/portal/status'],
-      ['PROD', 'https://apps.coresystems.net/portal/status'],
-      ['DE', 'https://de.coresystems.net/portal/status'],
-      ['CN', 'https://cn.coresystems.net/portal/status'],
-      ['EU', 'https://eu.coresystems.net/portal/status'],
-      ['US', 'https://us.coresystems.net/portal/status'],
-      ['SANDBOX', 'https://sb.dev.coresuite.com/portal/status']
+      ['ET', 'https://et.dev.coresuite.com'],
+      ['UT', 'https://et.dev.coresuite.com'],
+      ['QT', 'https://qt.dev.coresuite.com'],
+      ['PT', 'https://pt.dev.coresuite.com'],
+      ['PROD', 'https://apps.coresystems.net'],
+      ['DE', 'https://de.coresystems.net'],
+      ['CN', 'https://cn.coresystems.net'],
+      ['EU', 'https://eu.coresystems.net'],
+      ['US', 'https://us.coresystems.net'],
+      ['SANDBOX', 'https://sb.dev.coresuite.com']
     ])
   },
   {
@@ -176,7 +176,7 @@ export class Repository {
 
   public static isAppName = (it: string) => !!it && appCollection.getAllAppNames().map(e => e.toLowerCase()).indexOf(it.toLowerCase()) > -1;
 
-  public static matchEnvOrApp = (textInput?: EnvName | string): string[] => {
+  public static matchEnvOrApp = (textInput?: EnvName | AppName | string): string[] => {
     const allPossibleMatches = _.sortBy([
       ...appCollection.getAllEnvNames(),
       ...appCollection.getAllAppNames()
