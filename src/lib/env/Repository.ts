@@ -42,8 +42,10 @@ const FSM_WEB_APP_PATHS = (): [AppName, string, AppType][] => [
   ['CO', 'configuration', 'WEBAPP'],
   ['MAP', 'map', 'WEBAPP'],
   ['MP', 'marketplace', 'WEBAPP'],
+  ['CDC', 'checklist-data-collector', 'WEBAPP'],
   ['SU', 'sign-up', 'WEBAPP'],
-  ['STORE', 'store', 'WEBAPP_EMBBEDDED']
+  ['STORE', 'store', 'WEBAPP_EMBBEDDED'],
+  ['MAP2', 'service-map', 'WEBAPP_EMBBEDDED']
 ] as [AppName, string, AppType][];
 
 const appCollection = new AppCollection([

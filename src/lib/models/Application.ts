@@ -16,6 +16,7 @@ export type AppName = 'FACADE'
   | 'DL'
   | 'CO'
   | 'MAP'
+  | 'MAP2'
   | 'STORE';
 
 export type AppType = 'WEBAPP'
