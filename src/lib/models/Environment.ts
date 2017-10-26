@@ -39,7 +39,10 @@ export interface IEnvironment {
 }
 
 export class Environment implements IEnvironment {
-  constructor(public env: [EnvName, string, Maybe<{ [h: string]: string }>], public app: Application) {
+  constructor(
+    public env: [EnvName, string, Maybe<{ [h: string]: string }>],
+    public app: Application
+  ) {
   }
 
   public getStatus(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
@@ -110,7 +113,7 @@ export class Environment implements IEnvironment {
       }));
   }
 
-  private fromCloud(get: httpMiddleWare, format: Format) {
+  private fromCloud(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
     const { appShortName, githubRepoUrl } = this.app;
     const [versionInfo] = this.app.getVersionInfo(this.env);
     return get(versionInfo)
@@ -136,7 +139,7 @@ export class Environment implements IEnvironment {
       });
   }
 
-  private fromFacade(get: httpMiddleWare, format: Format) {
+  private fromFacade(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
     const { appShortName, githubRepoUrl } = this.app;
     const [versionInfo] = this.app.getVersionInfo(this.env)
     const deploymentInfo = this.app.getDeploymentInfo(this.env);
@@ -154,7 +157,7 @@ export class Environment implements IEnvironment {
       }));
   }
 
-  private fromHockeyApp(get: httpMiddleWare, format: Format) {
+  private fromHockeyApp(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
     const { appShortName, githubRepoUrl } = this.app;
     const [versionInfo] = this.app.getVersionInfo(this.env)
     return get(versionInfo)

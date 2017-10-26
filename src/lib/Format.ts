@@ -15,10 +15,10 @@ export interface IFromatParams {
 
 export class Format {
 
-  public UNKNOWN = 'UNKNOWN';
+  public static readonly UNKNOWN = 'UNKNOWN';
 
   public date(verb: string, stamp?: null | string | moment.Moment): string {
-    if (!stamp || stamp === this.UNKNOWN) return '';
+    if (!stamp || stamp === Format.UNKNOWN) return '';
 
     let stampAsMoment: moment.Moment | null = null;
 
@@ -47,10 +47,10 @@ export class Format {
   }
 
   public commit(githubRepoUrl: Maybe<string>, commit: Maybe<string>): string {
-    if (!commit || commit === this.UNKNOWN) return '';
+    if (!commit || commit === Format.UNKNOWN) return '';
     return githubRepoUrl
       ? `(<${githubRepoUrl}/commits/${commit}|${commit.substr(0, 5) + '...'}>)`
-      : commit.substr(0, 5) + '...';
+      : `(${commit.substr(0, 5)}...)`;
   }
 
 
