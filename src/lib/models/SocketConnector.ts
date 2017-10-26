@@ -15,7 +15,7 @@ export type SocketEvent = { type: 'SUCCESS', event: 'connect' | 'disconnect' | '
 export type ApplicationSocketEvent = SocketEvent & { env: Environment };
 
 
-export class RealTime {
+export class SocketConnector {
   public static getStream(it: Environment) {
 
 

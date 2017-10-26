@@ -30,7 +30,7 @@ const Storage = require('./lib/Storage');
 import { registerActions } from './lib/actions';
 import { keepAlive } from './helper/heroku';
 import { webhookMiddleware } from './lib/actions/hooks';
-import { stream$ } from "./rt";
+import { EnvironmentWatcher } from "./lib/EnvironmentWatcher";
 
 if (!process.env.clientId || !process.env.clientSecret || !process.env.redirectUri || !process.env.PORT || !process.env.REDIS_URL) {
     console.log(process.env);
@@ -121,18 +121,19 @@ controller.on('create_bot', function (bot, config) {
 
 // Handle events related to the websocket connection to Slack
 controller.on('rtm_open', function (bot) {
-    console.log('** The RTM api just connected!');
+  console.log('** The RTM api just connected!');
 
-    bot.say(
-      {
-        text: 'hi',
-        channel: '#fsm_build_server' // a valid slack channel, group, mpim, or im ID
-      }
-    );
+  bot.say(
+    {
+      text: 'hi',
+      channel: '#fsm_build_server' // a valid slack channel, group, mpim, or im ID
+    }
+  );
 
-    stream$.forEach(it => bot.say(
+  EnvironmentWatcher.getEventStream()
+    .forEach(streamEvent => bot.say(
       {
-        text: it.msg,
+        text: streamEvent.msg,
         channel: '#fsm_build_server'
       }
     ))
@@ -140,8 +141,15 @@ controller.on('rtm_open', function (bot) {
 });
 
 controller.on('rtm_close', function (bot) {
-    console.log('** The RTM api just closed');
-    // you may want to attempt to re-open
+  console.log('** The RTM api just closed');
+  // you may want to attempt to re-open
+
+  bot.say(
+    {
+      text: 'cu',
+      channel: '#fsm_build_server' // a valid slack channel, group, mpim, or im ID
+    }
+  );
 });
 
 

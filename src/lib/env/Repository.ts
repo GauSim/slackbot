@@ -2,7 +2,7 @@ import _ = require('lodash');
 import Config from '../config';
 import { IApplication, Application, AppName, AppType } from '../models/Application';
 import { Maybe } from '../models/Maybe';
-import { AppCollection } from './AppCollection';
+import { AppCollection } from '../models/AppCollection';
 import { EnvFilter, Environment, EnvName } from '../models/Environment';
 
 const withSecret = (secrets: string, env: 'NIGHTLY' | 'BETA' | 'STORE', alias: EnvName): [EnvName, string, Maybe<{ [h: string]: string }>] => {
