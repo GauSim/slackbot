@@ -117,24 +117,10 @@ export class Environment implements IEnvironment {
       .then(rawBody => {
 
         let version = null as null | string;
-        const exp = new RegExp(/([0-9][0-9]?\.[0-9][0-9]?\.[0-9][0-9]?\.[0-9][0-9]?[0-9]?)/);
+        const exp = new RegExp(/(\d+\.\d+.\d+\+\d+)/);
         if (exp.test(rawBody)) {
           const matches = exp.exec(rawBody);
           version = matches && matches[0] ? matches[0] : version;
-        }
-
-
-        let buildTimestamp = null as null | moment.Moment;
-        if (version) {
-          buildTimestamp = moment(
-            rawBody
-              .toLowerCase()
-              .replace(`${appShortName}-${version}`.toLowerCase(), '')
-              .replace('(', '')
-              .replace(')', '')
-              .toUpperCase(),
-            moment.ISO_8601)
-            .utc();
         }
 
         return format.mixinResultLine({
@@ -143,7 +129,7 @@ export class Environment implements IEnvironment {
           githubRepoUrl,
           versions: [version],
           lastCommits: [],
-          buildTimestamps: [buildTimestamp],
+          buildTimestamps: [],
           deployedTimestamp: null,
           diffingHash: `${appShortName}-${rawBody}`
         });
