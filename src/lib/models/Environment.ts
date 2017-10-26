@@ -117,7 +117,7 @@ export class Environment implements IEnvironment {
       .then(rawBody => {
 
         let version = null as null | string;
-        const exp = new RegExp(/(\d+\.\d+.\d+\+\d+)/);
+        const exp = new RegExp(/(\d+\.\d+\.\d+\+\d+)/);
         if (exp.test(rawBody)) {
           const matches = exp.exec(rawBody);
           version = matches && matches[0] ? matches[0] : version;
