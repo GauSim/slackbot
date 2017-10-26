@@ -1,3 +1,4 @@
+import assert = require('assert');
 /*
 Tests for storage modules.
 This file currently test simple_storage.js, redis_storage, and firebase_storage.
@@ -15,8 +16,8 @@ check(<your_storage_module>.channels);
 check(<your_storage_module>.teams);
 */
 
-const Storage = require('./index');
-const test = require('unit.js');
+import Storage = require('./index');
+import test = require('unit.js');
 
 
 describe('Storage', () => {
@@ -24,37 +25,37 @@ describe('Storage', () => {
 
     const testStorageMethod = function (storageMethod) {
 
-        testObj0 = { id: 'TEST0', foo: 'bar0' };
-        testObj1 = { id: 'TEST1', foo: 'bar1' };
+        const testObj0 = { id: 'TEST0', foo: 'bar0' };
+        const testObj1 = { id: 'TEST1', foo: 'bar1' };
 
         return new Promise((ok, fail) => {
             storageMethod.save(testObj0, function (err) {
 
-                test.assert(!err);
+                assert(!err);
 
                 storageMethod.save(testObj1, function (err) {
 
-                    test.assert(!err);
+                    assert(!err);
 
                     storageMethod.get(testObj0.id, function (err, data) {
 
-                        test.assert(!err);
+                        assert(!err);
                         console.log(data);
 
-                        test.assert(data.foo === testObj0.foo);
+                        assert(data.foo === testObj0.foo);
                     });
 
                     storageMethod.get('shouldnt-be-here', function (err, data) {
 
-                        test.assert(err.displayName === 'NotFound');
-                        test.assert(!data);
+                        assert(err.displayName === 'NotFound');
+                        assert(!data);
                     });
 
                     storageMethod.all(function (err, data) {
 
-                        test.assert(!err);
+                        assert(!err);
                         console.log(data);
-                        test.assert(
+                        assert(
                             data[0].foo === testObj0.foo && data[1].foo === testObj1.foo ||
                             data[0].foo === testObj1.foo && data[1].foo === testObj0.foo
                         );
@@ -69,10 +70,10 @@ describe('Storage', () => {
     };
 
     xit('[integration] should pass integration spec of botkit https://github.com/howdyai/botkit#writing-your-own-storage-module', (done) => {
-
+/*
         /// check out => http://redis4you.com/
         const uri = 'redis://simon:61037bdf0be4e6c50c0b60c47cd52a42@50.30.35.9:3328/';
-        const storage = Storage(uri);
+         const storage = Storage(uri);
 
         Promise.resolve()
             .then(_ => testStorageMethod(storage.users))
@@ -81,6 +82,7 @@ describe('Storage', () => {
             .then(r => assert(r))
             .then(_ => done())
             .catch(done)
+*/
 
     });
 
