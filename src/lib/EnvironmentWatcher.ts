@@ -27,7 +27,7 @@ export class EnvironmentWatcher {
 
   public static getEventStream() {
 
-    return Repository.filter(({ env, app }) => ['APP_BACKEND'].indexOf(app.type) !== -1) // , 'WEBAPP_EMBBEDDED' // todo
+    return Repository.filter(({ env, app }) => ['FACADE'].indexOf(app.appShortName) !== -1) // todo backends 'WEBAPP_EMBBEDDED'
       .map(it => SocketConnector.getStream(it))
       .reduce((all$, current$) => all$.merge(current$))
       .map(it => {
