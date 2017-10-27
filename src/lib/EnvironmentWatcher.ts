@@ -1,7 +1,7 @@
 
 import moment = require('moment-timezone');
-import { Repository } from "./lib/env/Repository";
-import { SocketConnector, ApplicationSocketEvent } from "./lib/models/SocketConnector";
+import { Repository } from "./env/Repository";
+import { SocketConnector, ApplicationSocketEvent } from "./models/SocketConnector";
 import { Observable } from "rxjs/Observable";
 
 const down = new Map<string, { time: moment.Moment }>([]);
@@ -27,7 +27,7 @@ export class EnvironmentWatcher {
 
   public static getEventStream() {
 
-    return Repository.filter(({ env, app }) => ['FACADE'].indexOf(app.type) !== -1) // , 'WEBAPP_EMBBEDDED' // todo
+    return Repository.filter(({ env, app }) => ['APP_BACKEND'].indexOf(app.type) !== -1) // , 'WEBAPP_EMBBEDDED' // todo
       .map(it => SocketConnector.getStream(it))
       .reduce((all$, current$) => all$.merge(current$))
       .map(it => {

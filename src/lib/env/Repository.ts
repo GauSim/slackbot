@@ -49,7 +49,7 @@ const FSM_WEB_APP_PATHS = (): [AppName, string, AppType][] => [
 ] as [AppName, string, AppType][];
 
 const appCollection = new AppCollection([
-  {
+  ({
     appShortName: 'ANDROID',
     githubRepoUrl: 'https://github.com/coresystemsFSM/android-coresuite',
     type: 'ANDROID' as AppType,
@@ -58,85 +58,102 @@ const appCollection = new AppCollection([
       withSecret(Config.androidSecrets, 'BETA', 'QT'),
       withSecret(Config.androidSecrets, 'STORE', 'PROD')
     ]
-  },
-  {
+  } as IApplication),
+  ({
     appShortName: 'FACADE',
     githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
-    type: 'FACADE' as AppType,
+    type: 'APP_BACKEND',
     envMap: ([
-      ['ET', 'https://et.dev.coresuite.com'],
-      ['UT', 'https://et.dev.coresuite.com'],
-      ['QT', 'https://qt.dev.coresuite.com'],
-      ['PT', 'https://pt.dev.coresuite.com'],
-      ['PROD', 'https://apps.coresystems.net'],
-      ['DE', 'https://de.coresystems.net'],
-      ['CN', 'https://cn.coresystems.net'],
-      ['EU', 'https://eu.coresystems.net'],
-      ['US', 'https://us.coresystems.net'],
-      ['SANDBOX', 'https://sb.dev.coresuite.com']
+      ['ET', 'https://et.dev.coresuite.com/portal'],
+      ['UT', 'https://et.dev.coresuite.com/portal'],
+      ['QT', 'https://qt.dev.coresuite.com/portal'],
+      ['PT', 'https://pt.dev.coresuite.com/portal'],
+      ['PROD', 'https://apps.coresystems.net/portal'],
+      ['DE', 'https://de.coresystems.net/portal'],
+      ['CN', 'https://cn.coresystems.net/portal'],
+      ['EU', 'https://eu.coresystems.net/portal'],
+      ['US', 'https://us.coresystems.net/portal'],
+      ['SANDBOX', 'https://sb.dev.coresuite.com/portal']
     ])
-  },
-  {
+  } as IApplication),
+  ({
+    appShortName: 'CS',
+    githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
+    type: 'APP_BACKEND',
+    envMap: ([
+      ['ET', 'https://et.dev.coresuite.com/cs'],
+      ['UT', 'https://et.dev.coresuite.com/cs'],
+      ['QT', 'https://qt.dev.coresuite.com/cs'],
+      ['PT', 'https://pt.dev.coresuite.com/cs'],
+      ['PROD', 'https://apps.coresystems.net/cs'],
+      ['DE', 'https://de.coresystems.net/cs'],
+      ['CN', 'https://cn.coresystems.net/cs'],
+      ['EU', 'https://eu.coresystems.net/cs'],
+      ['US', 'https://us.coresystems.net/cs'],
+      ['SANDBOX', 'https://sb.dev.coresuite.com/cs']
+    ])
+  } as IApplication),
+  ({
     appShortName: 'DS',
     githubRepoUrl: 'https://github.com/coresystemsFSM/cloud',
     type: 'CLOUD' as AppType,
     envMap: [
-      ['PROD', 'https://ds.coresuite.com/ds/status'],
-      ['EU', 'https://eu.coresuite.com/ds/status']
+      ['PROD', 'https://ds.coresuite.com/ds'],
+      ['EU', 'https://eu.coresuite.com/ds']
     ]
-  },
-  {
+  } as IApplication),
+  ({
     appShortName: 'MC',
     githubRepoUrl: 'https://github.com/coresystemsFSM/cloud',
     type: 'CLOUD' as AppType,
     envMap: ([
-      ['ET', 'https://et.dev.coresuite.com/mc/status'],
-      ['UT', 'https://ut.dev.coresuite.com/mc/status'],
-      ['QT', 'https://qt.dev.coresuite.com/mc/status'],
-      ['PT', 'https://pt.dev.coresuite.com/mc/status'],
-      ['PROD', 'https://ds.coresuite.com/mc/status'],
-      ['DE', 'https://de.coresuite.com/mc/status'],
-      ['EU', 'https://eu.coresuite.com/mc/status'],
-      ['US', 'https://us.coresuite.com/mc/status'],
-      ['CN', 'https://cn.coresuite.cn/mc/status'],
-      ['SANDBOX', 'https://sb.dev.coresuite.com/mc/status']
+      ['ET', 'https://et.dev.coresuite.com/mc'],
+      ['UT', 'https://ut.dev.coresuite.com/mc'],
+      ['QT', 'https://qt.dev.coresuite.com/mc'],
+      ['PT', 'https://pt.dev.coresuite.com/mc'],
+      ['PROD', 'https://ds.coresuite.com/mc'],
+      ['DE', 'https://de.coresuite.com/mc'],
+      ['EU', 'https://eu.coresuite.com/mc'],
+      ['US', 'https://us.coresuite.com/mc'],
+      ['CN', 'https://cn.coresuite.cn/mc'],
+      ['SANDBOX', 'https://sb.dev.coresuite.com/mc']
     ])
-  },
-  {
+  } as IApplication),
+  ({
     appShortName: 'DC',
     githubRepoUrl: 'https://github.com/coresystemsFSM/cloud',
     type: 'CLOUD' as AppType,
     envMap: ([
-      ['ET', 'https://et.dev.coresuite.com/dc/status'],
-      ['UT', 'https://ut.dev.coresuite.com/dc/status'],
-      ['QT', 'https://qt.dev.coresuite.com/dc/status'],
-      ['PT', 'https://pt.dev.coresuite.com/dc/status'],
-      ['PROD', 'https://ds.coresuite.com/dc/status'],
-      ['DE', 'https://de.coresuite.com/dc/status'],
-      ['EU', 'https://eu.coresuite.com/dc/status'],
-      ['US', 'https://us.coresuite.com/dc/status'],
-      ['CN', 'https://cn.coresuite.cn/dc/status'],
-      ['SANDBOX', 'https://sb.dev.coresuite.com/dc/status']
+      ['ET', 'https://et.dev.coresuite.com/dc'],
+      ['UT', 'https://ut.dev.coresuite.com/dc'],
+      ['QT', 'https://qt.dev.coresuite.com/dc'],
+      ['PT', 'https://pt.dev.coresuite.com/dc'],
+      ['PROD', 'https://ds.coresuite.com/dc'],
+      ['DE', 'https://de.coresuite.com/dc'],
+      ['EU', 'https://eu.coresuite.com/dc'],
+      ['US', 'https://us.coresuite.com/dc'],
+      ['CN', 'https://cn.coresuite.cn/dc'],
+      ['SANDBOX', 'https://sb.dev.coresuite.com/dc']
     ] as [EnvName, string][])
-  },
-  {
+  } as IApplication),
+  ({
     appShortName: 'ADMIN',
     githubRepoUrl: 'https://github.com/coresystemsFSM/admin',
     type: 'CLOUD' as AppType,
     envMap: ([
-      ['ET', 'https://et.dev.coresuite.com/admin/status'],
-      ['UT', 'https://ut.dev.coresuite.com/admin/status'],
-      ['QT', 'https://qt.dev.coresuite.com/admin/status'],
-      ['PT', 'https://pt.dev.coresuite.com/admin/status'],
-      ['PROD', 'https://ds.coresuite.com/admin/status'],
-      ['DE', 'https://de.coresuite.com/admin/status'],
-      ['EU', 'https://eu.coresuite.com/admin/status'],
-      ['US', 'https://us.coresuite.com/admin/status'],
-      ['CN', 'https://cn.coresuite.cn/admin/status'],
-      ['SANDBOX', 'https://sb.dev.coresuite.com/admin/status']
+      ['ET', 'https://et.dev.coresuite.com/admin'],
+      ['UT', 'https://ut.dev.coresuite.com/admin'],
+      ['QT', 'https://qt.dev.coresuite.com/admin'],
+      ['PT', 'https://pt.dev.coresuite.com/admin'],
+      ['PROD', 'https://ds.coresuite.com/admin'],
+      ['DE', 'https://de.coresuite.com/admin'],
+      ['EU', 'https://eu.coresuite.com/admin'],
+      ['US', 'https://us.coresuite.com/admin'],
+      ['CN', 'https://cn.coresuite.cn/admin'],
+      ['SANDBOX', 'https://sb.dev.coresuite.com/admin']
     ])
-  },
-  {
+  } as IApplication),
+  ({
     appShortName: 'NOW',
     githubRepoUrl: 'https://github.com/coresystemsFSM/now',
     type: 'WEBAPP' as AppType,
@@ -145,7 +162,8 @@ const appCollection = new AppCollection([
       ['QT', 'https://qt.now.gl'],
       ['PROD', 'https://now.gl']
     ])
-  },
+  } as IApplication),
+
   ...FSM_WEB_APP_PATHS()
     .map(([appShortName, path, type]: [AppName, string, AppType]) => ({
       appShortName,
@@ -154,7 +172,7 @@ const appCollection = new AppCollection([
       envMap: FSM_WEB_APP_ENV_HOSTS()
         .filter(([env]) => env !== 'PREVIEW' as EnvName) // on preview all apps run in [WEBAPP_EMBBEDDED] mode
         .reduce((list, [env, url]) => [...list, [env, `${url}/${path}`] as [EnvName, string]], [] as [EnvName, string][]),
-    })),
+    })) as IApplication[],
 
   ...FSM_WEB_APP_PATHS()
     .map(([appShortName, path, type]: [AppName, string, AppType]) => ({
@@ -164,7 +182,7 @@ const appCollection = new AppCollection([
       envMap: FSM_WEB_APP_ENV_HOSTS()
         .filter(([env]) => env === 'PREVIEW' as EnvName)
         .reduce((list, [env, url]) => [...list, [env, `${url}/${path}`] as [EnvName, string]], [] as [EnvName, string][]),
-    }))
+    })) as IApplication[]
 
 
 ] as IApplication[]);

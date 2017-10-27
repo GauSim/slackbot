@@ -48,22 +48,22 @@ export class Environment implements IEnvironment {
   public getStatus(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
     switch (this.app.type) {
       case 'WEBAPP':
-        return this.fromWebapp(get, format);
+        return this.fromWebAppFetcher(get, format);
       case 'WEBAPP_EMBBEDDED':
-        return this.fromEmbeddedWebapp(get, format);
-      case 'FACADE':
-        return this.fromFacade(get, format);
+        return this.fromEmbeddedWebAppFetcher(get, format);
+      case 'APP_BACKEND':
+        return this.fromAppBackendAppFetcher(get, format);
       case 'CLOUD':
-        return this.fromCloud(get, format);
+        return this.fromCloudAppFetcher(get, format);
       case 'ANDROID':
-        return this.fromHockeyApp(get, format);
+        return this.fromAndroidAppFetcher(get, format);
       default:
         return Promise.reject(new Error(`appType:${this.app.type} has no mapper`));
     }
   }
 
 
-  private fromEmbeddedWebapp(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
+  private fromEmbeddedWebAppFetcher(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
     const { appShortName, githubRepoUrl } = this.app;
     const [frontEndVersionInfo, backEndVersionInfo] = this.app.getVersionInfo(this.env)
     const deploymentInfo = this.app.getDeploymentInfo(this.env);
@@ -88,7 +88,7 @@ export class Environment implements IEnvironment {
       }));
   }
 
-  private fromWebapp(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
+  private fromWebAppFetcher(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
     const { appShortName, githubRepoUrl } = this.app;
     const [versionInfo] = this.app.getVersionInfo(this.env)
     const deploymentInfo = this.app.getDeploymentInfo(this.env);
@@ -113,7 +113,7 @@ export class Environment implements IEnvironment {
       }));
   }
 
-  private fromCloud(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
+  private fromCloudAppFetcher(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
     const { appShortName, githubRepoUrl } = this.app;
     const [versionInfo] = this.app.getVersionInfo(this.env);
     return get(versionInfo)
@@ -139,7 +139,7 @@ export class Environment implements IEnvironment {
       });
   }
 
-  private fromFacade(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
+  private fromAppBackendAppFetcher(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
     const { appShortName, githubRepoUrl } = this.app;
     const [versionInfo] = this.app.getVersionInfo(this.env)
     const deploymentInfo = this.app.getDeploymentInfo(this.env);
@@ -157,7 +157,7 @@ export class Environment implements IEnvironment {
       }));
   }
 
-  private fromHockeyApp(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
+  private fromAndroidAppFetcher(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
     const { appShortName, githubRepoUrl } = this.app;
     const [versionInfo] = this.app.getVersionInfo(this.env)
     return get(versionInfo)

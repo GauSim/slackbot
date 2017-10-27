@@ -8,6 +8,7 @@ export class Config {
     ? process.env.androidSecrets
     : ''
 
+  public readonly isDevelopmentMode = !!process.env.development && process.env.development === 'true';
 };
 
 const Singleton = new Config();

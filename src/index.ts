@@ -31,6 +31,7 @@ import { registerActions } from './lib/actions';
 import { keepAlive } from './helper/heroku';
 import { webhookMiddleware } from './lib/actions/hooks';
 import { EnvironmentWatcher } from "./lib/EnvironmentWatcher";
+import config from './lib/config';
 
 if (!process.env.clientId || !process.env.clientSecret || !process.env.redirectUri || !process.env.PORT || !process.env.REDIS_URL) {
     console.log(process.env);
@@ -122,6 +123,10 @@ controller.on('create_bot', function (bot, config) {
 // Handle events related to the websocket connection to Slack
 controller.on('rtm_open', function (bot) {
   console.log('** The RTM api just connected!');
+
+  if (config.isDevelopmentMode) {
+    return;
+  }
 
   bot.say(
     {

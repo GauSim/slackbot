@@ -17,12 +17,14 @@ export type AppName = 'FACADE'
   | 'CO'
   | 'MAP'
   | 'MAP2'
-  | 'STORE';
+  | 'STORE'
+  | 'ANDROID'
+  | 'CS';
 
 export type AppType = 'WEBAPP'
   | 'WEBAPP_EMBBEDDED'
   | 'CLOUD'
-  | 'FACADE'
+  | 'APP_BACKEND'
   | 'ANDROID';
 
 export interface IApplication {
@@ -63,7 +65,7 @@ export class Application implements IApplication {
       + `&authorization=${formattedAuthToken}`).toString('base64');
 
     switch (this.type) {
-      case 'FACADE':
+      case 'APP_BACKEND':
         return { url, token }
         case 'WEBAPP_EMBBEDDED':
         return { url, token }
@@ -80,8 +82,9 @@ export class Application implements IApplication {
         return [{ url: `${url}/appconfig.json` }, { url: `${url}/portal/status` }];
       case 'ANDROID':
         return [{ url, headers }, null];
-      case 'FACADE':
-        return [{ url: `${url}/portal/status` }, null];
+      case 'APP_BACKEND':
+      case 'CLOUD':
+        return [{ url: `${url}/status` }, null];
       default:
         return [{ url }, null];
     }
