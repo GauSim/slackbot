@@ -86,10 +86,9 @@ const appCollection = new AppCollection([
       ['QT', 'https://qt.dev.coresuite.com/cs'],
       ['PT', 'https://pt.dev.coresuite.com/cs'],
       ['PROD', 'https://apps.coresystems.net/cs'],
-      ['DE', 'https://de.coresystems.net/cs'],
-      ['CN', 'https://cn.coresystems.net/cs'],
-      ['EU', 'https://eu.coresystems.net/cs'],
-      ['US', 'https://us.coresystems.net/cs'],
+      ['DE', 'https://de.coresuite.com/cs'],
+      ['EU', 'https://eu.coresuite.com/cs'],
+      ['US', 'https://us.coresuite.com/cs'],
       ['SANDBOX', 'https://sb.dev.coresuite.com/cs']
     ])
   } as IApplication),
