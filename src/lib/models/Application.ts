@@ -19,7 +19,8 @@ export type AppName = 'FACADE'
   | 'MAP2'
   | 'STORE'
   | 'ANDROID'
-  | 'CS';
+  | 'CS'
+  | 'TMJ';
 
 export type AppType = 'WEBAPP'
   | 'WEBAPP_EMBBEDDED'
