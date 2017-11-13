@@ -120,10 +120,10 @@ export class Environment implements IEnvironment {
       .then(rawBody => {
 
         let version = null as null | string;
-        const exp = new RegExp(/[0-9][0-9]?\.[0-9][0-9]?\.[0-9][0-9]?\+[0-9]?[0-9]?[0-9]?[0-9]?/);
+        const exp = new RegExp(/admin (\d+\.\d+\.\d+)\+<[^>]+>(\d+)<[^>]+>/);
         if (exp.test(rawBody)) {
           const matches = exp.exec(rawBody);
-          version = matches && matches[0] ? matches[0] : version;
+          version = matches && matches[1] && matches[2] ? matches[1] || '+' || matches[2] : version;
         }
 
         return format.mixinResultLine({
@@ -134,7 +134,7 @@ export class Environment implements IEnvironment {
           lastCommits: [],
           buildTimestamps: [],
           deployedTimestamp: null,
-          diffingHash: `${appShortName}-${rawBody}`
+          diffingHash: `${appShortName}-${version}`
         });
       });
   }
