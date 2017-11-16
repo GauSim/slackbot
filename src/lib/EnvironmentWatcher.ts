@@ -6,7 +6,7 @@ import { Observable } from "rxjs/Observable";
 
 const down = new Map<string, { time: moment.Moment }>([]);
 
-const toHash = (it$: ApplicationSocketEvent) => `${it$.env.app.appShortName}|${it$.env.env[0]}`;
+const toHash = (it$: ApplicationSocketEvent) => "´"+it$.env.app.appShortName+" "+` | ${it$.env.env[0]}`;
 
 const wentOffline = (hash: string, it: ApplicationSocketEvent) => {
   down.set(hash, { time: moment(new Date()) });
@@ -14,7 +14,8 @@ const wentOffline = (hash: string, it: ApplicationSocketEvent) => {
 }
 
 const stillOffline = (hash: string, it: ApplicationSocketEvent) => {
-  return `[${hash}] is still offline ...`;
+  //return `[${hash}] is still offline ...`;
+  return undefined;
 }
 
 const wentOnline = (hash: string, it: ApplicationSocketEvent) => {
@@ -35,12 +36,8 @@ export class EnvironmentWatcher {
         return {
           ...it,
           msg: it.type === 'ERROR'
-            ? down.has(hash)
-              ? stillOffline(hash, it)
-              : wentOffline(hash, it)
-            : down.has(hash)
-              ? wentOnline(hash, it)
-              : undefined
+            ? down.has(hash) ? undefined : wentOffline(hash, it)
+            : down.has(hash) ? wentOnline(hash, it) : undefined
         }
       })
       .filter(it => !!it.msg);
