@@ -6,8 +6,8 @@
   "scripts": {
     "start": "node release/index.js",
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register 'src/**/*.spec.ts'",
-    "local": "npm run clean && npm run build && development='true' REDIS_URL='redis://simon:61037bdf0be4e6c50c0b60c47cd52a42@50.30.35.9:3328/' clientId='106108509589.109495619184' clientSecret='a31ce7b384a6e984ef0e5b6662b089c4' PORT='3000' pingURL='http://localhost:3000' redirectUri='http://localhost:3000/oauth' androidSecrets='' node release/index.js",
-    "build:live": "REDIS_URL='redis://simon:61037bdf0be4e6c50c0b60c47cd52a42@50.30.35.9:3328/' clientId='106108509589.109495619184' clientSecret='a31ce7b384a6e984ef0e5b6662b089c4' PORT='3000' pingURL='http://localhost:3000' redirectUri='http://localhost:3000/oauth' nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts",
+    "local": "npm run clean && npm run build && development='true' PORT='3000' androidSecrets='' node release/index.js",
+    "build:live": "PORT='3000' nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts",
     "build:start": "nodemon --exec npm start",
     "prebuild": "npm run clean",
     "build": "tsc -p . --pretty",
@@ -19,7 +19,7 @@
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.4.6",
-    "botkit": "^0.4.2",
+    "botkit": "^0.4.10",
     "lodash": "^4.17.4",
     "moment": "^2.17.1",
     "moment-timezone": "^0.5.10",

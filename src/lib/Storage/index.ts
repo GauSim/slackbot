@@ -31,7 +31,7 @@ const toCallbackAPI = (partialStore) => {
 }
 
 
-module.exports = function (uri: string) {
+export = function (uri: string) {
 
   // create main store
   const db = new BaseStorage(uri);
