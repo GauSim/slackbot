@@ -7,8 +7,9 @@ import { Format } from '../Format';
 import { Repository } from '../env/Repository';
 import { Maybe } from '../models/Maybe';
 import { Environment, IEnvResponse, httpMiddleWare, EnvName } from '../models/Environment';
+import { IMessage } from '../models/IMessage';
 
-interface IMessage { text: string, match: [string] };
+
 const removeMatch = (message: IMessage): string => message.text
   .replace(message.match[0], '')
   .trim()

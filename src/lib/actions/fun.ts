@@ -1,17 +1,22 @@
 import _ = require('underscore');
+import request = require('request-promise-native');
+import cheerio = require('cheerio');
 
 const YES = [
-    'ok!',
-    'moep!',
-    'jep!',
+    "drop it like it's hot!",
+    "kein ding für'n king",
+    'Alter vollkrass!',
     'yo, yo, yo!',
-    'jau!',
+    '...Läuft bei dir!',
     'si',
+    'was labers du?',
     'Ahoi!',
     'woop woop,',
     'ja, freilich Digga!',
-    'klar!',
-    'yes homie!'
+    'yes homie!',
+    'yo, hab bock!',
+    'auf jeden',
+    'I bims'
 ]
 
 const FUNNY_STUFF = [
@@ -99,10 +104,31 @@ sleep...
     '... buying the world a Coke'
 ];
 
+export function getSomethingSmart(input: string, reply: (msg: string) => void) {
+    const url = 'http://webknox.com/' + encodeURIComponent(input);
+    console.log('GET', url)
+    request.get(url)
+        .then((response: string) => {
+            const $ = cheerio.load(response)
+            const elm = $('.answerBox');
+
+            const answer = (elm ? elm.text() : '' as string || '').trim();
+            const crap = "I understand the question but I don't know the answer."
+            reply(
+                answer != crap ? answer : _(FUNNY_STUFF).sample(1)[0]
+            );
+        })
+        .catch(e => {
+            console.error(`ERROR [getRandomJoke] ${JSON.stringify(e, null, 2)}`);
+        });
+}
+
+
 export function getRandomMsg(reply: (msg: string) => void) {
 
     reply(
-        _(YES).sample(1)[0] + '   ' + _(FUNNY_STUFF).sample(1)[0]
+        (Math.floor((Math.random() * 2) + 1) ? _(YES).sample(1)[0] + '   ' : '')
+        + _(FUNNY_STUFF).sample(1)[0]
     );
 }
 

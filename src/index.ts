@@ -1,3 +1,4 @@
+require('dotenv').config();
 const Botkit = require('botkit');
 import Storage = require('./lib/Storage');
 import { registerActions } from './lib/actions';
@@ -12,7 +13,7 @@ if (!process.env.token) {
 }
 
 const controller = Botkit.slackbot({
-  debug: true
+  debug: config.isDevelopmentMode
   // storage: Storage(process.env.REDIS_URL)
 });
 
@@ -23,16 +24,13 @@ const bot = controller.spawn({
 
 controller.on('rtm_open', bot => {
   console.log('** The RTM api just connected!');
-
   if (config.isDevelopmentMode) {
     return;
   }
-
 });
 
-controller.on('rtm_close', bot =>  {
+controller.on('rtm_close', bot => {
   console.log('** The RTM api just closed');
-
   bot.say(
     {
       text: 'cu',
@@ -41,6 +39,12 @@ controller.on('rtm_close', bot =>  {
   );
 });
 
+/*
+interface ISlackChannel { id: string, name: string, num_members: number, is_member:boolean }
+bot.api.channels.list({}, (err, response: { ok: boolean, channels: ISlackChannel[] }) => {
+  console.log('################', response.channels.filter(it =>it.num_members > 15 && it.is_member))
+})
+*/
 
 // register all actions
 registerActions(controller);

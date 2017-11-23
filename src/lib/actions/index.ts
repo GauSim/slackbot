@@ -2,6 +2,7 @@ import _ = require('underscore');
 import * as fun from './fun';
 import { actions as hookActions } from './hooks';
 import { actions as whatsOnlineActions } from './whats-online';
+import { IMessage } from '../models/IMessage';
 
 
 const actions = [
@@ -25,7 +26,7 @@ export function registerActions(controller) {
         controller.hears(action.triggers, ['direct_message', 'mention', 'direct_mention'], action.handler);
     });
 
-    controller.hears(['help', 'info'], ['direct_message', 'mention', 'direct_mention'], (bot, message) => {
+    controller.hears(['help', 'info'], ['direct_message', 'mention', 'direct_mention'], (bot, message: IMessage) => {
 
         // build help string
         const helpStringForEachAction = actions.map(action =>
@@ -37,7 +38,26 @@ export function registerActions(controller) {
         bot.reply(message, text);
     });
 
-    controller.on(['direct_message', 'mention', 'direct_mention'], function (bot, message) {
+    controller.hears('ey', ['direct_message', 'mention', 'direct_mention'], (bot, message: IMessage) => {
+
+        const removeMatch = (message: IMessage): string => message.text
+            .replace(message.match[0], '')
+            .trim()
+
+        const text = removeMatch(message);
+        if (!text) {
+            return
+        }
+
+        fun.getSomethingSmart(text, smartStuff => bot.say(
+            {
+                text: smartStuff,
+                channel: message.channel
+            }
+        ));
+    });
+            
+    controller.on(['direct_message', 'mention', 'direct_mention'], function (bot, message: IMessage) {
         bot.api.reactions.add({
             timestamp: message.ts,
             channel: message.channel,

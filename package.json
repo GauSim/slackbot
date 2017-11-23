@@ -6,13 +6,15 @@
   "scripts": {
     "start": "node release/index.js",
     "test": "mocha --compilers ts:ts-node/register,tsx:ts-node/register 'src/**/*.spec.ts'",
-    "local": "npm run clean && npm run build && development='true' PORT='3000' androidSecrets='' node release/index.js",
-    "build:live": "PORT='3000' nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts",
+    "local": "npm run clean && npm run build && development='true' node release/index.js",
+    "build:live": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/index.ts",
     "build:start": "nodemon --exec npm start",
-    "prebuild": "npm run clean",
+    "prebuild": "npm run clean && npm run copy:dotenv",
     "build": "tsc -p . --pretty",
     "build:watch": "npm run build -- -w",
     "clean": "rimraf release/*",
+    "copy:dotenv": "cp-cli .env ./release/.env",
+    "clean:dotenv": "rimraf ./release/.env",
     "rt": "nodemon --exec ./node_modules/.bin/ts-node -- ./src/rt.ts"
   },
   "author": "",
@@ -20,6 +22,8 @@
   "dependencies": {
     "bluebird": "^3.4.6",
     "botkit": "^0.4.10",
+    "cheerio": "^1.0.0-rc.2",
+    "dotenv": "^4.0.0",
     "lodash": "^4.17.4",
     "moment": "^2.17.1",
     "moment-timezone": "^0.5.10",
@@ -45,6 +49,7 @@
     "sinon": "^1.17.6",
     "ts-node": "^3.3.0",
     "typescript": "^2.5.1",
-    "unit.js": "^2.0.0"
+    "unit.js": "^2.0.0",
+    "cp-cli": "^1.1.0"
   }
 }

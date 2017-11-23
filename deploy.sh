@@ -18,6 +18,9 @@ npm install;
 echo "build";
 npm run build;
 
+echo "remove .env";
+npm run clean:dotenv;
+
 echo "creat zip file artefact ($filename)";
 zip -r $filename *;
 
