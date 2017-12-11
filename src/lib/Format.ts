@@ -49,8 +49,8 @@ export class Format {
   public commit(githubRepoUrl: Maybe<string>, commit: Maybe<string>): string {
     if (!commit || commit === Format.UNKNOWN) return '';
     return githubRepoUrl
-      ? `(<${githubRepoUrl}/commits/${commit}|${commit.substr(0, 5) + '...'}>)`
-      : `(${commit.substr(0, 5)}...)`;
+      ? `(<${githubRepoUrl}/commits/${commit}|#${commit.substr(0, 3) + '...'}>)`
+      : `(#${commit.substr(0, 3)}...)`;
   }
 
 
@@ -62,7 +62,7 @@ export class Format {
       versions.map(it => `*${it}*`).join(','),
       lastCommits.map(lastCommit => `*${this.commit(githubRepoUrl, lastCommit)}*`).join(','),
       buildTimestamps.map(it => this.date('build', it)).join(','),
-      this.date('deployed', deployedTimestamp)
+      this.date('deploy', deployedTimestamp)
     ].filter(x => !!x).join(' ');
 
     const [envName, url] = env;

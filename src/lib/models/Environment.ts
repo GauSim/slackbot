@@ -13,9 +13,7 @@ export type EnvName = 'ALL'
   | 'CN'
   | 'EU'
   | 'US'
-  | 'PROD-QA-EU'
-  | 'PROD-QA-US'
-  | 'SANDBOX'
+  | 'SANDBOX';
 
 
 export type EnvFilter = (env: Environment) => boolean;
@@ -70,22 +68,28 @@ export class Environment implements IEnvironment {
     return Promise
       .all([
         get(frontEndVersionInfo)
-          .then(it => JSON.parse(it) as { lastCommit: string; buildTimestamp: string; appConfig: { version: string; } }),
+          .then(it => JSON.parse(it) as Partial<{ lastCommit: string; buildTimestamp: string; appConfig: { version: string; } }>),
         get(deploymentInfo)
-          .then(it => JSON.parse(it)) as Promise<{ timestamp: null | string }>,
+          .then(it => JSON.parse(it)) as Promise<{ timestamp?: string }>,
         get(backEndVersionInfo)
-          .then(rawBody => JSON.parse(rawBody) as { lastCommit: string; buildTimestamp: string; deployTimestamp: string, version: string })
+          .then(rawBody => JSON.parse(rawBody) as Partial<{ lastCommit: string; buildTimestamp: string; deployTimestamp: string, version: string, serviceName: string }>)
       ])
-      .then(([frontEnd, { timestamp }, backEnd]) => format.mixinResultLine({
-        env: this.env,
-        appShortName,
-        githubRepoUrl,
-        lastCommits: [frontEnd.lastCommit, backEnd.lastCommit],
-        buildTimestamps: [frontEnd.buildTimestamp, backEnd.buildTimestamp],
-        versions: [frontEnd.appConfig.version, backEnd.version],
-        deployedTimestamp: timestamp,
-        diffingHash: `${appShortName}-${frontEnd.appConfig.version}-${frontEnd.lastCommit}-${backEnd.version}-${backEnd.lastCommit}`
-      }));
+      .then(([frontEnd, { timestamp }, backEnd]) => {
+
+        const frontEndVersion = frontEnd.appConfig ? frontEnd.appConfig.version : Format.UNKNOWN;
+
+        return format.mixinResultLine({
+          env: this.env,
+          appShortName,
+          githubRepoUrl,
+          lastCommits: [frontEnd.lastCommit, backEnd.lastCommit],
+          buildTimestamps: [frontEnd.buildTimestamp, backEnd.buildTimestamp],
+          versions: [frontEndVersion, backEnd.version],
+          deployedTimestamp: timestamp,
+          diffingHash: `${appShortName}-${frontEndVersion}-${frontEnd.lastCommit}-${backEnd.version}-${backEnd.lastCommit}`
+        })
+      }
+    );
   }
 
   private fromWebAppFetcher(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {

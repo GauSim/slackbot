@@ -5,7 +5,7 @@ import { Maybe } from '../models/Maybe';
 import { AppCollection } from '../models/AppCollection';
 import { EnvFilter, Environment, EnvName } from '../models/Environment';
 
-const withSecret = (secrets: string, env: 'NIGHTLY' | 'BETA' | 'STORE', alias: EnvName): [EnvName, string, Maybe<{ [h: string]: string }>] => {
+const withSecret = (secrets: string, env: EnvName): [EnvName, string, Maybe<{ [h: string]: string }>] => {
   const [realName, url, header] = (secrets.split(',')
     .map(line => {
       const [envName, appId, token] = line.split(':');
@@ -13,7 +13,7 @@ const withSecret = (secrets: string, env: 'NIGHTLY' | 'BETA' | 'STORE', alias: E
     })
     .find(([itsName]) => itsName === env) || [env, '????']) as [EnvName, string, Maybe<{ [h: string]: string }>];
 
-  return [alias, url, header];
+  return [env, url, header];
 }
 
 
@@ -40,7 +40,6 @@ const FSM_WEB_APP_PATHS = (): [AppName, string, AppType][] => [
   ['PM', 'project-management', 'WEBAPP'],
   ['DL', 'dataloader', 'WEBAPP'],
   ['CO', 'configuration', 'WEBAPP'],
-  ['MAP', 'map', 'WEBAPP'],
   ['MP', 'marketplace', 'WEBAPP'],
   ['CDC', 'checklist-data-collector', 'WEBAPP'],
   ['SU', 'sign-up', 'WEBAPP'],
@@ -50,16 +49,19 @@ const FSM_WEB_APP_PATHS = (): [AppName, string, AppType][] => [
 ] as [AppName, string, AppType][];
 
 const appCollection = new AppCollection([
+ /*
+  keys seem outdated
   ({
     appShortName: 'ANDROID',
     githubRepoUrl: 'https://github.com/coresystemsFSM/android-coresuite',
     type: 'ANDROID' as AppType,
     envMap: [
-      withSecret(Config.androidSecrets, 'NIGHTLY', 'ET'),
-      withSecret(Config.androidSecrets, 'BETA', 'QT'),
-      withSecret(Config.androidSecrets, 'STORE', 'PROD')
+      withSecret(Config.androidSecrets, 'ANDROID-NIGHTLY'),
+      withSecret(Config.androidSecrets, 'ANDROID-BETA'),
+      withSecret(Config.androidSecrets, 'ANDROID-STORE')
     ]
   } as IApplication),
+   */
   ({
     appShortName: 'FACADE',
     githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
