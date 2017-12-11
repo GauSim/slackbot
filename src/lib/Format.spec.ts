@@ -1,6 +1,6 @@
 import assert = require('assert');
 import { Format, IFromatParams } from './Format';
-import { EnvName, Environment } from './models/Environment';
+import { Environment } from './models/Environment';
 import { Repository } from './env/Repository';
 
 const RANDOM_COMMIT_HASH = '0eefb30189d7295dd071c369f06eafa3205ee955';
@@ -15,7 +15,7 @@ describe('whats-online.spec.ts', () => {
       const commitHash = RANDOM_COMMIT_HASH;
 
       const result = new Format().commit(githubRepoUrl, commitHash);
-      assert.deepEqual(result, '(<https://example.com/commits/0eefb30189d7295dd071c369f06eafa3205ee955|0eefb...>)');
+      assert.deepEqual(result, '(<https://example.com/commits/0eefb30189d7295dd071c369f06eafa3205ee955|0ee...>)');
     });
 
     it('should deal with [null] commits', () => {
@@ -39,7 +39,7 @@ describe('whats-online.spec.ts', () => {
       const commitHash = RANDOM_COMMIT_HASH;
 
       const result = new Format().commit(githubRepoUrl, commitHash);
-      assert.deepEqual(result, '(0eefb...)');
+      assert.deepEqual(result, '(0ee...)');
     });
   })
 

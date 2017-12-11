@@ -4,16 +4,16 @@ export default class PartialStore implements IBaseStorage {
 
   get: <T>(key: string) => Promise<T>;
   save: <T>(key: string, value: T) => Promise<string>;
-  delete: <T>(key: string) => Promise<string>;
+  delete: (key: string) => Promise<string>;
   all: <T>() => Promise<T[] | null>;
   keys: () => Promise<string[]>;
   matchKey: (key: string) => Promise<string[]>;
 
-  constructor(_store: IBaseStorage, private _name: string) {
+  constructor(_store: IBaseStorage, public _name: string) {
 
-    const toKey = k => `${_name}:${k}`;
+    const toKey = (k: string) => `${this._name}:${k}`;
 
-    const fromKey = (fullKey) => {
+    const fromKey = (fullKey: string) => {
       return fullKey.replace(toKey(''), '');
     };
 

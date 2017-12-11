@@ -47,7 +47,7 @@ export class Application implements IApplication {
     this.envMap = obj.envMap;
   }
 
-  getRealTimeInfo([env, url]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
+  getRealTimeInfo([_, url]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
 
     const cloudHost = '### cloudHost ###';
     const formattedAuthToken = '### token ###';
@@ -68,14 +68,14 @@ export class Application implements IApplication {
     switch (this.type) {
       case 'APP_BACKEND':
         return { url, token }
-        case 'WEBAPP_EMBBEDDED':
+      case 'WEBAPP_EMBBEDDED':
         return { url, token }
       default:
         return null;
     }
   }
 
-  getVersionInfo([env, url, headers]: [EnvName, string, Maybe<{ [key: string]: string }>]): [IRequestOptions, Maybe<IRequestOptions>] {
+  getVersionInfo([_, url, headers]: [EnvName, string, Maybe<{ [key: string]: string }>]): [IRequestOptions, Maybe<IRequestOptions>] {
     switch (this.type) {
       case 'WEBAPP':
         return [{ url: `${url}/appconfig.json` }, null];
@@ -91,7 +91,7 @@ export class Application implements IApplication {
     }
   }
 
-  getDeploymentInfo([env, url]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
+  getDeploymentInfo([_, url]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
     switch (this.type) {
       case 'WEBAPP':
       case 'WEBAPP_EMBBEDDED':

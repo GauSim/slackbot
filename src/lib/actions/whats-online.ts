@@ -6,26 +6,22 @@ import * as fun from './fun';
 import { Format } from '../Format';
 import { Repository } from '../env/Repository';
 import { Maybe } from '../models/Maybe';
-import { Environment, IEnvResponse, httpMiddleWare, EnvName } from '../models/Environment';
+import { Environment, IEnvResponse, httpMiddleWare } from '../models/Environment';
 import { IMessage } from '../models/IMessage';
+import { IBot } from '../models/IBot';
 
 
 const removeMatch = (message: IMessage): string => message.text
-  .replace(message.match[0], '')
-  .trim()
-  .toUpperCase();
-
-const NO_VERSION_NUMBER_FOUND = 'no version number found';
-
-
-
+    .replace(message.match[0], '')
+    .trim()
+    .toUpperCase();
 
 class WhatsOnline {
 
     _get: httpMiddleWare;
 
     constructor(
-        _request: any,
+        _request: (o: {}) => Promise<string>,
         private _format: Format,
         private doNotThrow = true) {
 
@@ -35,7 +31,7 @@ class WhatsOnline {
             }
             const start = moment(new Date());
             console.log(`GET | ${opt.url}`);
-            return (_request as (o) => Promise<string>)(Object.assign(opt, { timeout: 12000 }))
+            return (_request)(Object.assign(opt, { timeout: 12000 }))
                 .then(response => {
                     console.log(`DONE [${(moment.duration(start.diff(new Date())).asSeconds() * -1)}] | ${opt.url}`);
                     return response;
@@ -57,7 +53,7 @@ class WhatsOnline {
                 deployedTimestamp: null,
                 resultLine: ("`" + envName + "`") + ` | <${url}|${app.appShortName}> → *looks offline* (${error instanceof Error ? error.message : ''})`,
                 hasError: true,
-                diffingHash:`${Date.now()}-${app.appShortName}-${envName}`
+                diffingHash: `${Date.now()}-${app.appShortName}-${envName}`
             }
         } else {
             throw error instanceof Error ? error : new Error(error);
@@ -67,7 +63,7 @@ class WhatsOnline {
     getWork(toCheck: string[] = []): Promise<IEnvResponse>[] {
         return Repository
             .filter(({ env, app }) => {
-                const [envName, url] = env;
+                const [envName] = env;
                 return toCheck.length === 0
                     || !!envName && toCheck.map(e => e.toLowerCase()).indexOf(envName.toLowerCase()) > -1 // by envName
                     || toCheck.map(e => e.toLowerCase()).indexOf(app.appShortName.toLowerCase()) > -1 // by appName
@@ -92,7 +88,7 @@ const actions = [
             'v '
         ],
         help: `i will check each env/app and tell you what version is deployed, you can also check for a specific env => ${Repository.matchEnvOrApp().map(e => "`" + e + "`").join(', ')}`,
-        handler: (bot, message: IMessage) => {
+        handler: (bot: IBot, message: IMessage) => {
 
 
             fun.getRandomMsg(funnyStuff => bot.reply(message, funnyStuff));
@@ -122,7 +118,7 @@ const actions = [
             'd '
         ],
         help: `ill try to get a diff of the env/app's like ${Repository.matchEnvOrApp().map(e => "`" + e + "`").join(', ')}`,
-        handler: (bot, message: IMessage) => {
+        handler: (bot: IBot, message: IMessage) => {
 
             fun.getRandomMsg(funnyStuff => bot.reply(message, funnyStuff));
 
@@ -163,8 +159,8 @@ const actions = [
                         ? '... looks the same to me →' + toCheck.map(it => '`' + it + '`').join(' == ')
                         : (grpByAppHash as any)
                             .map((list: IEnvResponse[]) => {
-                              const versionStr = list[0].lastCommits && list[0].lastCommits.length
-                                ? `${list[0].versions.join(',')} ${list[0].lastCommits.map(it => new Format().commit(list[0].githubRepoUrl, it)).join(',')}`
+                                const versionStr = list[0].lastCommits && list[0].lastCommits.length
+                                    ? `${list[0].versions.join(',')} ${list[0].lastCommits.map(it => new Format().commit(list[0].githubRepoUrl, it)).join(',')}`
                                     : list[0].versions.join(',')
 
                                 return '`' + list[0].appShortName + '`' + ` | *${versionStr}* → ` + list.map(it => '`' + it.env[0] + '`').join(' == ');

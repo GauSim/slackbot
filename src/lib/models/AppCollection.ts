@@ -34,7 +34,7 @@ export class AppCollection {
 
     public getAllEnvNames(): EnvName[] {
         const result: EnvName[] = [];
-        this.all.forEach(app => app.envMap.map(([envName, url]) => {
+        this.all.forEach(app => app.envMap.map(([envName]) => {
             if (result.indexOf(envName) === -1) {
                 result.push(envName);
             }

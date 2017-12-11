@@ -1,1 +1,7 @@
-export interface IMessage { text: string, match: [string], channel: string, ts:number };
+export interface IMessage {
+  text: string,
+  match: [string],
+  channel: string,
+  ts: number,
+  user: string
+};

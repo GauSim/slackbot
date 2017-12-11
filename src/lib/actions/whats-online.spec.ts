@@ -1,5 +1,4 @@
 import assert = require('assert');
-import sinon = require('sinon');
 import { actions } from './whats-online';
 
 

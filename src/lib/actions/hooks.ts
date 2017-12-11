@@ -1,15 +1,17 @@
 
-import BaseStorage from '../Storage/BaseStorage';
+import BaseStorage, { IBaseStorage } from '../Storage/BaseStorage';
 import PartialStore from '../Storage/PartialStore';
 import config from '../config';
 import crypto = require('crypto');
+import { IMessage } from '../models/IMessage';
+import { IBot } from '../models/IBot';
 
 class WebhookService {
 
   hooks: PartialStore;
   subscriptions: PartialStore;
 
-  constructor(baseStore) {
+  constructor(baseStore: IBaseStorage) {
     this.subscriptions = new PartialStore(baseStore, 'subscriptions');
     this.hooks = new PartialStore(baseStore, 'hooks');
   }
@@ -21,7 +23,7 @@ class WebhookService {
     return this.subscriptions.save(subName, subData);
   }
 
-  addHook(name, message) {
+  addHook(name: string, message: IMessage) {
 
     const hook = {
       name,
@@ -31,11 +33,11 @@ class WebhookService {
     return this.hooks.save(name, hook);
   }
 
-  removeHook(name) {
+  removeHook(name: string) {
     return this.hooks.delete(name);
   }
 
-  createHookName(name) {
+  createHookName(name: string) {
     const secret = 'server-secret'; // doto read from process 
     return crypto.createHmac('sha256', secret)
       .update(name)
@@ -72,11 +74,11 @@ class WebhookService {
   }
 }
 
-function hookToUrl(hookName) {
+function hookToUrl(hookName: string) {
   return `${process.env.pingURL}/hooks/${hookName}`;
 }
 
-function createBuildResultsUrl(relativUrl) {
+function createBuildResultsUrl(relativUrl: string) {
   if (!relativUrl || !config.buildServerBase) {
     return ''
   }
@@ -89,7 +91,7 @@ function createBuildResultsUrl(relativUrl) {
 /* usage example:
 curl "http://core-slackbot.herokuapp.com/hooks/gasi/df9e5ec3455f9dfe0480d83e8ace0caf548b302d036bc95bc4c6b1f74d8db802?msg=${bamboo.buildResultKey}&buildResultsUrl=${bamboo.buildResultsUrl}" 
 */
-export function webhookMiddleware(hookName, bots, req, res) {
+export function webhookMiddleware(hookName: string, bots: { [k: string]: any }, req: any, res: any) {
 
   const inputMsg = req.query.msg;
   if (!inputMsg) { return res.status(404).json(null); };
@@ -155,7 +157,7 @@ const actions = [
       'hooks all'
     ],
     help: `lists hooks`,
-    handler: (bot, message) => {
+    handler: (bot: IBot, message: IMessage) => {
       bot.reply(message, `thinking ...`);
 
       const baseStore = new BaseStorage(process.env.REDIS_URL);
@@ -174,14 +176,14 @@ const actions = [
       'hooks clean all', 'hooks clear all'
     ],
     help: `remove all registerd hooks`,
-    handler: (bot, message) => {
+    handler: (bot: IBot, message: IMessage) => {
       bot.reply(message, `thinking on it ...`);
 
       const baseStore = new BaseStorage(process.env.REDIS_URL);
       const hookService = new WebhookService(baseStore);
 
       hookService.clean()
-        .then(msg => {
+        .then(_ => {
           bot.reply(message, 'done');
         })
         .then(() => hookService.getAll())
@@ -197,7 +199,7 @@ const actions = [
       'hooks remove', 'hooks delete'
     ],
     help: "remove a hook like: hooks remove [hook-name-here]",
-    handler: (bot, message) => {
+    handler: (bot: IBot, message: IMessage) => {
       bot.reply(message, `ok, removing hook ...`);
 
       const baseStore = new BaseStorage(process.env.REDIS_URL);
@@ -205,14 +207,14 @@ const actions = [
       const hookName = message.text.replace('hooks remove', '').trim();
 
       hookService.removeHook(hookName)
-        .then(msg => {
+        .then(_ => {
           bot.reply(message, 'done');
         })
         .then(() => hookService.getAll())
         .then(msg => {
           bot.reply(message, msg);
         })
-        .catch(ex => bot.reply(message, JSON.stringify(ex)))
+        .catch((ex: any) => bot.reply(message, JSON.stringify(ex)))
         .then(() => baseStore.kill());
     }
   },
@@ -221,7 +223,7 @@ const actions = [
       'hooks add', 'hooks create'
     ],
     help: "add a webhook to this channel, conversation",
-    handler: (bot, message) => {
+    handler: (bot: IBot, message: IMessage) => {
       bot.reply(message, `ok, adding hook ...`);
 
       const baseStore = new BaseStorage(process.env.REDIS_URL);

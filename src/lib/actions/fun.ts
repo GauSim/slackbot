@@ -1,4 +1,4 @@
-import _ = require('underscore');
+import _ = require('lodash');
 import request = require('request-promise-native');
 import cheerio = require('cheerio');
 
@@ -115,7 +115,9 @@ export function getSomethingSmart(input: string, reply: (msg: string) => void) {
             const answer = (elm ? elm.text() : '' as string || '').trim();
             const crap = "I understand the question but I don't know the answer."
             reply(
-                answer != crap ? answer : _(FUNNY_STUFF).sample(1)[0]
+                answer != crap
+                    ? answer
+                    : (_(FUNNY_STUFF).sample() || '')
             );
         })
         .catch(e => {
@@ -127,8 +129,8 @@ export function getSomethingSmart(input: string, reply: (msg: string) => void) {
 export function getRandomMsg(reply: (msg: string) => void) {
 
     reply(
-        (Math.floor((Math.random() * 2) + 1) ? _(YES).sample(1)[0] + '   ' : '')
-        + _(FUNNY_STUFF).sample(1)[0]
+        (Math.floor((Math.random() * 2) + 1) ? _(YES).sample() + '   ' : '')
+        + _(FUNNY_STUFF).sample()
     );
 }
 

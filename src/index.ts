@@ -1,11 +1,8 @@
 require('dotenv').config();
 const Botkit = require('botkit');
-import Storage = require('./lib/Storage');
 import { registerActions } from './lib/actions';
-import { keepAlive } from './helper/heroku';
-import { webhookMiddleware } from './lib/actions/hooks';
-import { EnvironmentWatcher } from "./lib/EnvironmentWatcher";
 import config from './lib/config';
+import { IBot } from './lib/models/IBot';
 
 
 if (!process.env.token) {
@@ -22,14 +19,14 @@ const bot = controller.spawn({
 }).startRTM();
 
 
-controller.on('rtm_open', bot => {
+controller.on('rtm_open', (_: IBot) => {
   console.log('** The RTM api just connected!');
   if (config.isDevelopmentMode) {
     return;
   }
 });
 
-controller.on('rtm_close', bot => {
+controller.on('rtm_close', (_: IBot) => {
   console.log('** The RTM api just closed');
   bot.say(
     {

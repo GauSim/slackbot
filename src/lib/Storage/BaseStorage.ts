@@ -12,13 +12,13 @@ interface IRedisClient {
   getAsync: (key: string) => Promise<string>;
   setAsync: (key: string, value: any) => Promise<string>;
   keysAsync: (key: string) => Promise<string[]>;
-  quit();
+  quit(): void;
 }
 
 export interface IBaseStorage {
   get: <T>(key: string) => Promise<T>;
   save: <T>(key: string, v: T) => Promise<string>;
-  delete: <T>(key: string) => Promise<string>;
+  delete: (key: string) => Promise<string>;
   all: <T>(partial?: string) => Promise<T[] | null>;
   keys: () => Promise<string[]>;
   matchKey: (key: string) => Promise<string[]>;
@@ -28,7 +28,7 @@ export default class BaseStorage implements IBaseStorage {
 
   get: <T>(key: string) => Promise<T>;
   save: <T>(key: string, v: T) => Promise<string>;
-  delete: <T>(key: string) => Promise<string>;
+  delete: (key: string) => Promise<string>;
   keys: () => Promise<string[]>;
   matchKey: (key: string) => Promise<string[]>;
   kill: () => void;
@@ -40,7 +40,7 @@ export default class BaseStorage implements IBaseStorage {
 
     const _client: IRedisClient = redis.createClient(uri) as any as IRedisClient;
 
-    this.get = <T>(key) => _client.getAsync(key)
+    this.get = <T>(key: string) => _client.getAsync(key)
       .then(data => {
 
         if (data === EMPTY_BLOB || data === null) {
@@ -57,7 +57,7 @@ export default class BaseStorage implements IBaseStorage {
 
     this.delete = k => _client.setAsync(k, EMPTY_BLOB);
 
-    this.all = <T>(partial: string | null = null) => this.keys()
+    this.all = (partial: string | null = null) => this.keys()
       .then(keys => {
         const work = keys
           .filter(key => (partial === null) || key.indexOf(partial) > -1) // select partition
@@ -76,13 +76,13 @@ export default class BaseStorage implements IBaseStorage {
     this.allAsMap = () => {
       return this.keys()
         .then((listOfKeys) => {
-          const redis = {};
+          const redis: { [k: string]: any } = {};
           const work = listOfKeys.map(key => {
             return this.get(key)
               .then(value => {
                 redis[key] = value;
               })
-              .catch(r => {
+              .catch(_ => {
                 redis[key] = null;
               });
           });

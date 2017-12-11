@@ -1,10 +1,9 @@
 import _ = require('lodash');
-import Config from '../config';
-import { IApplication, Application, AppName, AppType } from '../models/Application';
-import { Maybe } from '../models/Maybe';
+import { IApplication, AppName, AppType } from '../models/Application';
 import { AppCollection } from '../models/AppCollection';
 import { EnvFilter, Environment, EnvName } from '../models/Environment';
 
+/*
 const withSecret = (secrets: string, env: EnvName): [EnvName, string, Maybe<{ [h: string]: string }>] => {
   const [realName, url, header] = (secrets.split(',')
     .map(line => {
@@ -15,7 +14,7 @@ const withSecret = (secrets: string, env: EnvName): [EnvName, string, Maybe<{ [h
 
   return [env, url, header];
 }
-
+*/
 
 const FSM_WEB_APP_ENV_HOSTS = (): [EnvName, string][] => [
   ['ET', 'https://et.coresystems.net'],
@@ -49,19 +48,19 @@ const FSM_WEB_APP_PATHS = (): [AppName, string, AppType][] => [
 ] as [AppName, string, AppType][];
 
 const appCollection = new AppCollection([
- /*
-  keys seem outdated
-  ({
-    appShortName: 'ANDROID',
-    githubRepoUrl: 'https://github.com/coresystemsFSM/android-coresuite',
-    type: 'ANDROID' as AppType,
-    envMap: [
-      withSecret(Config.androidSecrets, 'ANDROID-NIGHTLY'),
-      withSecret(Config.androidSecrets, 'ANDROID-BETA'),
-      withSecret(Config.androidSecrets, 'ANDROID-STORE')
-    ]
-  } as IApplication),
-   */
+  /*
+   keys seem outdated
+   ({
+     appShortName: 'ANDROID',
+     githubRepoUrl: 'https://github.com/coresystemsFSM/android-coresuite',
+     type: 'ANDROID' as AppType,
+     envMap: [
+       withSecret(Config.androidSecrets, 'ANDROID-NIGHTLY'),
+       withSecret(Config.androidSecrets, 'ANDROID-BETA'),
+       withSecret(Config.androidSecrets, 'ANDROID-STORE')
+     ]
+   } as IApplication),
+    */
   ({
     appShortName: 'FACADE',
     githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
@@ -177,7 +176,7 @@ const appCollection = new AppCollection([
     })) as IApplication[],
 
   ...FSM_WEB_APP_PATHS()
-    .map(([appShortName, path, type]: [AppName, string, AppType]) => ({
+    .map(([appShortName, path]: [AppName, string, AppType]) => ({
       appShortName,
       type: 'WEBAPP_EMBBEDDED' as AppType, // on PREVIEW all apps are WEBAPP_EMBBEDDED
       githubRepoUrl: 'https://github.com/coresystemsFSM/portal',

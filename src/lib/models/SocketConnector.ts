@@ -3,8 +3,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/filter';
 import 'rxjs/add/operator/merge';
-import { AppName, Application } from './Application';
-import { IRequestOptions, Environment } from './Environment';
+import { Environment } from './Environment';
 
 
 export type SocketEvent = { type: 'SUCCESS', event: 'connect' | 'disconnect' | 'ping', payload: null | undefined }
@@ -40,10 +39,10 @@ export class SocketConnector {
 
         socket
           .on('connect', () => observer.next(convert({ type: 'SUCCESS', event: 'connect', payload: null })))
-          .on('event', payload => observer.next(convert({ type: 'SUCCESS', event: 'event', payload })))
-          .on('ping', payload => observer.next(convert({ type: 'SUCCESS', event: 'ping', payload })))
-          .on('pong', latencyMs => observer.next(convert({ type: 'SUCCESS', event: 'pong', payload: latencyMs })))
-          .on('reconnect', n => observer.next(convert({ type: 'SUCCESS', event: 'disconnect', payload: n })))
+          .on('event', <T>(payload: T) => observer.next(convert({ type: 'SUCCESS', event: 'event', payload })))
+          .on('ping', (payload: any) => observer.next(convert({ type: 'SUCCESS', event: 'ping', payload })))
+          .on('pong', (latencyMs: number) => observer.next(convert({ type: 'SUCCESS', event: 'pong', payload: latencyMs })))
+          .on('reconnect', (n: any) => observer.next(convert({ type: 'SUCCESS', event: 'disconnect', payload: n })))
           .on('disconnect', () => observer.next(convert({ type: 'SUCCESS', event: 'disconnect', payload: null })))
           .on('reconnect_error', (e: Error) => observer.next(convert({ type: 'ERROR', event: 'reconnect_error', payload: e })))
           .on('connect_timeout', (e: Error) => observer.next(convert({ type: 'ERROR', event: 'connect_timeout', payload: e })))

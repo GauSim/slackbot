@@ -1,5 +1,4 @@
-import moment = require('moment-timezone');
-import { AppName, Application, IApplication } from './Application';
+import { Application, IApplication } from './Application';
 import { Maybe } from './Maybe';
 import { IFromatParams, Format } from '../Format';
 
@@ -89,7 +88,7 @@ export class Environment implements IEnvironment {
           diffingHash: `${appShortName}-${frontEndVersion}-${frontEnd.lastCommit}-${backEnd.version}-${backEnd.lastCommit}`
         })
       }
-    );
+      );
   }
 
   private fromWebAppFetcher(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
@@ -102,7 +101,7 @@ export class Environment implements IEnvironment {
           .then(it => JSON.parse(it) as { lastCommit: string; buildTimestamp: string; appConfig: { version: string; } }),
         (deploymentInfo
           ? get(deploymentInfo).then(it => JSON.parse(it))
-            .catch(error => ({ timestamp: null })) // catch 404, and redirects on deploy file.
+            .catch(_ => ({ timestamp: null })) // catch 404, and redirects on deploy file.
           : Promise.resolve(({ timestamp: null }))) as Promise<{ timestamp: null | string }>
       ])
       .then(([{ lastCommit, buildTimestamp, appConfig }, { timestamp }]) => format.mixinResultLine({
@@ -146,7 +145,6 @@ export class Environment implements IEnvironment {
   private fromAppBackendAppFetcher(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
     const { appShortName, githubRepoUrl } = this.app;
     const [versionInfo] = this.app.getVersionInfo(this.env)
-    const deploymentInfo = this.app.getDeploymentInfo(this.env);
     return get(versionInfo)
       .then(rawBody => JSON.parse(rawBody) as { lastCommit: string; buildTimestamp: string; deployTimestamp: string, version: string })
       .then(({ lastCommit, version, buildTimestamp, deployTimestamp }) => format.mixinResultLine({

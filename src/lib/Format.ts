@@ -49,8 +49,8 @@ export class Format {
   public commit(githubRepoUrl: Maybe<string>, commit: Maybe<string>): string {
     if (!commit || commit === Format.UNKNOWN) return '';
     return githubRepoUrl
-      ? `(<${githubRepoUrl}/commits/${commit}|#${commit.substr(0, 3) + '...'}>)`
-      : `(#${commit.substr(0, 3)}...)`;
+      ? `(<${githubRepoUrl}/commits/${commit}|${commit.substr(0, 3) + '...'}>)`
+      : `(${commit.substr(0, 3)}...)`;
   }
 
 
