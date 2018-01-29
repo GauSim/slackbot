@@ -21,7 +21,7 @@ class WhatsOnline {
     _get: httpMiddleWare;
 
     constructor(
-        _request: (o: {}) => Promise<string>,
+        _request: (o: any) => Promise<string>,
         private _format: Format,
         private doNotThrow = true) {
 
@@ -93,7 +93,7 @@ const actions = [
 
             fun.getRandomMsg(funnyStuff => bot.reply(message, funnyStuff));
 
-            const whatsOnline = new WhatsOnline(request, new Format());
+            const whatsOnline = new WhatsOnline(request as any, new Format());
             const toCheck = Repository.matchEnvOrApp(removeMatch(message));
             if (!toCheck.length) {
                 bot.reply(message, `mhm? unknown... \n try ${Repository.matchEnvOrApp().map(e => "`" + e + "`").join(', ')}`);
@@ -122,7 +122,7 @@ const actions = [
 
             fun.getRandomMsg(funnyStuff => bot.reply(message, funnyStuff));
 
-            const whatsOnline = new WhatsOnline(request, new Format());
+            const whatsOnline = new WhatsOnline(request as any, new Format());
 
             const toCheck = Repository.matchEnvOrApp(removeMatch(message));
             if (!toCheck.length) {
