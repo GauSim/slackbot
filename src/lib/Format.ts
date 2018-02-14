@@ -1,9 +1,10 @@
 import moment = require('moment-timezone');
 import { Maybe } from './models/Maybe';
-import { IEnvResponse, EnvName } from './models/Environment';
+import { IEnvResponse } from './models/Environment';
+import { EnvMapItem } from './models/Application';
 
 export interface IFromatParams {
-  env: [EnvName, string, Maybe<{ [key: string]: string }>];
+  env: EnvMapItem;
   appShortName: string;
   versions: Maybe<string>[];
   lastCommits: Maybe<string>[];

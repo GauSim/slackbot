@@ -1,4 +1,4 @@
-import { Application, IApplication } from './Application';
+import { Application, IApplication, EnvMapItem } from './Application';
 import { Maybe } from './Maybe';
 import { IFromatParams, Format } from '../Format';
 
@@ -31,13 +31,13 @@ export interface IEnvResponse extends IFromatParams {
 export type httpMiddleWare = (opt: Maybe<IRequestOptions>) => Promise<string>;
 
 export interface IEnvironment {
-  env: [EnvName, string, Maybe<{ [h: string]: string }>];
+  env: EnvMapItem;
   app: IApplication
 }
 
 export class Environment implements IEnvironment {
   constructor(
-    public env: [EnvName, string, Maybe<{ [h: string]: string }>],
+    public env: EnvMapItem,
     public app: Application
   ) {
   }

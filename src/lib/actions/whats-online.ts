@@ -9,6 +9,7 @@ import { Maybe } from '../models/Maybe';
 import { Environment, IEnvResponse, httpMiddleWare } from '../models/Environment';
 import { IMessage } from '../models/IMessage';
 import { IBot } from '../models/IBot';
+import { EnvMapItem } from '../models/Application';
 
 
 const removeMatch = (message: IMessage): string => message.text
@@ -40,7 +41,7 @@ class WhatsOnline {
     }
 
     private catchError(error: Error | string, { env, app }: Environment): IEnvResponse {
-        const [envName, url] = env;
+        const [envName, url] = env as EnvMapItem;
         if (this.doNotThrow) {
             console.log({ error, envName, app: app.appShortName, url });
             return {

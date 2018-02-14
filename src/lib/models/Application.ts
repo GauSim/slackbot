@@ -28,18 +28,21 @@ export type AppType = 'WEBAPP'
   | 'APP_BACKEND'
   | 'ANDROID';
 
-export interface IApplication {
+
+export type EnvMapItem = [EnvName, string] | [EnvName, string, Maybe<{ [key: string]: string }>];
+
+export type IApplication = {
   appShortName: AppName;
   githubRepoUrl: string;
   type: AppType;
-  envMap: [EnvName, string, Maybe<{ [key: string]: string }>][];
+  envMap: EnvMapItem[];
 };
 
 export class Application implements IApplication {
   appShortName: AppName;
   githubRepoUrl: string;
   type: AppType;
-  envMap: [EnvName, string, Maybe<{ [key: string]: string }>][];
+  envMap: EnvMapItem[];
   constructor(obj: IApplication) {
     this.appShortName = obj.appShortName;
     this.githubRepoUrl = obj.githubRepoUrl;
@@ -75,7 +78,8 @@ export class Application implements IApplication {
     }
   }
 
-  getVersionInfo([_, url, headers]: [EnvName, string, Maybe<{ [key: string]: string }>]): [IRequestOptions, Maybe<IRequestOptions>] {
+  getVersionInfo(env: EnvMapItem): [IRequestOptions, Maybe<IRequestOptions>] {
+    const [, url, headers] = env as [EnvName, string, Maybe<{ [key: string]: string }>];
     switch (this.type) {
       case 'WEBAPP':
         return [{ url: `${url}/appconfig.json` }, null];
@@ -91,7 +95,7 @@ export class Application implements IApplication {
     }
   }
 
-  getDeploymentInfo([_, url]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
+  getDeploymentInfo([_, url]: EnvMapItem): Maybe<IRequestOptions> {
     switch (this.type) {
       case 'WEBAPP':
       case 'WEBAPP_EMBBEDDED':
