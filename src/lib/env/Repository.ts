@@ -31,14 +31,14 @@ const FSM_WEB_APP_ENV_HOSTS = (): [EnvName, string][] => [
 ] as [EnvName, string][];
 
 const FSM_WEB_APP_PATHS = (): [AppName, string, AppType][] => [
-  ['WFM', 'workforce-management', 'WEBAPP'],
+  ['WFM', 'workforce-management', 'WEBAPP_EMBBEDDED'],
   ['AR', 'analytics-reporting', 'WEBAPP_EMBBEDDED'],
   ['MDM', 'master-data-management', 'WEBAPP_EMBBEDDED'],
   ['KM', 'knowledge-management', 'WEBAPP_EMBBEDDED'],
-  ['SM', 'system-monitoring', 'WEBAPP'],
-  ['PM', 'project-management', 'WEBAPP'],
+  ['SM', 'system-monitoring', 'WEBAPP_EMBBEDDED'],
+  ['PM', 'project-management', 'WEBAPP_EMBBEDDED'],
   ['DL', 'dataloader', 'WEBAPP_EMBBEDDED'],
-  ['CO', 'configuration', 'WEBAPP'],
+  ['CO', 'configuration', 'WEBAPP_EMBBEDDED'],
   ['MP', 'marketplace', 'WEBAPP_EMBBEDDED'],
   ['CDC', 'checklist-data-collector', 'WEBAPP'],
   ['SU', 'sign-up', 'WEBAPP'],
