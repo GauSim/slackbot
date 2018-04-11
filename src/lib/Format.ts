@@ -58,10 +58,13 @@ export class Format {
   public mixinResultLine(response: IFromatParams): IEnvResponse {
 
     const { lastCommits, githubRepoUrl, buildTimestamps, deployedTimestamp, env, appShortName, versions } = response;
-
     const pretty = [
-      versions.map(it => `*${it}*`).join(','),
-      lastCommits.map(lastCommit => `*${this.commit(githubRepoUrl, lastCommit)}*`).join(','),
+      versions
+        .reduce((all, it) => it && all.indexOf(it) == -1 ? [...all, it] : all, [] as string[])
+        .map(it => `*${it}*`).join(','),
+      lastCommits
+        .reduce((all, it) => it && all.indexOf(it) == -1 ? [...all, it] : all, [] as string[])
+        .map(lastCommit => `*${this.commit(githubRepoUrl, lastCommit)}*`).join(','),
       buildTimestamps.map(it => this.date('build', it)).join(','),
       this.date('deploy', deployedTimestamp)
     ].filter(x => !!x).join(' ');

@@ -50,7 +50,7 @@ export class Application implements IApplication {
     this.envMap = obj.envMap;
   }
 
-  getRealTimeInfo([_, url]: [EnvName, string, Maybe<{ [key: string]: string }>]): Maybe<IRequestOptions> {
+  getRealTimeInfo([_, url]: EnvMapItem): Maybe<IRequestOptions> {
 
     const cloudHost = '### cloudHost ###';
     const formattedAuthToken = '### token ###';
@@ -98,8 +98,9 @@ export class Application implements IApplication {
   getDeploymentInfo([_, url]: EnvMapItem): Maybe<IRequestOptions> {
     switch (this.type) {
       case 'WEBAPP':
-      case 'WEBAPP_EMBBEDDED':
         return { url: `${url}/deployed.json` };
+      case 'WEBAPP_EMBBEDDED':
+        return { url: `${url}/portal/status` }
       default:
         return null;
     }

@@ -63,17 +63,14 @@ export class Environment implements IEnvironment {
   private fromEmbeddedWebAppFetcher(get: httpMiddleWare, format: Format): Promise<IEnvResponse> {
     const { appShortName, githubRepoUrl } = this.app;
     const [frontEndVersionInfo, backEndVersionInfo] = this.app.getVersionInfo(this.env)
-    const deploymentInfo = this.app.getDeploymentInfo(this.env);
     return Promise
       .all([
         get(frontEndVersionInfo)
           .then(it => JSON.parse(it) as Partial<{ lastCommit: string; buildTimestamp: string; appConfig: { version: string; } }>),
-        get(deploymentInfo)
-          .then(it => JSON.parse(it)) as Promise<{ timestamp?: string }>,
         get(backEndVersionInfo)
           .then(rawBody => JSON.parse(rawBody) as Partial<{ lastCommit: string; buildTimestamp: string; deployTimestamp: string, version: string, serviceName: string }>)
       ])
-      .then(([frontEnd, { timestamp }, backEnd]) => {
+      .then(([frontEnd, backEnd]) => {
 
         const frontEndVersion = frontEnd.appConfig ? frontEnd.appConfig.version : Format.UNKNOWN;
 
@@ -84,7 +81,7 @@ export class Environment implements IEnvironment {
           lastCommits: [frontEnd.lastCommit, backEnd.lastCommit],
           buildTimestamps: [frontEnd.buildTimestamp, backEnd.buildTimestamp],
           versions: [frontEndVersion, backEnd.version],
-          deployedTimestamp: timestamp,
+          deployedTimestamp: backEnd.deployTimestamp,
           diffingHash: `${appShortName}-${frontEndVersion}-${frontEnd.lastCommit}-${backEnd.version}-${backEnd.lastCommit}`
         })
       }
