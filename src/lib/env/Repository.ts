@@ -142,16 +142,16 @@ const appCollection = new AppCollection([
     githubRepoUrl: 'https://github.com/coresystemsFSM/admin',
     type: 'CLOUD' as AppType,
     envMap: ([
-      ['ET', 'https://et.dev.coresuite.com/admin'],
-      ['UT', 'https://ut.dev.coresuite.com/admin'],
-      ['QT', 'https://qt.dev.coresuite.com/admin'],
-      ['PT', 'https://pt.dev.coresuite.com/admin'],
-      ['PROD', 'https://ds.coresuite.com/admin'],
-      ['DE', 'https://de.coresuite.com/admin'],
-      ['EU', 'https://eu.coresuite.com/admin'],
-      ['US', 'https://us.coresuite.com/admin'],
-      ['CN', 'https://cn.coresuite.cn/admin'],
-      ['SANDBOX', 'https://sb.dev.coresuite.com/admin']
+      ['ET', 'https://et.coresystems.net/admin'],
+      ['UT', 'https://ut.coresystems.net/admin'],
+      ['QT', 'https://qt.coresystems.net/admin'],
+      ['PT', 'https://pt.coresystems.net/admin'],
+      ['PROD', 'https://eu.coresystems.net/admin'],
+      ['DE', 'https://de.coresystems.net/admin'],
+      ['EU', 'https://eu.coresystems.net/admin'],
+      ['US', 'https://us.coresystems.net/admin'],
+      ['CN', 'https://cn.coresystems.cn/admin'],
+      ['SANDBOX', 'https://sb.coresystems.net/admin']
     ])
   } as IApplication),
   ({
