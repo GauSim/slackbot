@@ -19,15 +19,13 @@ const withSecret = (secrets: string, env: EnvName): [EnvName, string, Maybe<{ [h
 const FSM_WEB_APP_ENV_HOSTS = (): [EnvName, string][] => [
   ['ET', 'https://et.coresystems.net'],
   ['QT', 'https://qt.coresystems.net'],
-  ['PT', 'https://pt.coresystems.net'],
   ['SANDBOX', 'https://sb.coresystems.net'],
   ['PROD', 'https://apps.coresystems.net'],
   ['DE', 'https://de.coresystems.net'],
   ['EU', 'https://eu.coresystems.net'],
   ['CN', 'https://cn.coresystems.net'],
   ['US', 'https://us.coresystems.net'],
-  ['UT', 'https://ut.coresystems.net'],
-  ['PREVIEW', 'https://preview.coresystems.net']
+  ['UT', 'https://ut.coresystems.net']
 ] as [EnvName, string][];
 
 const FSM_WEB_APP_PATHS = (): [AppName, string, AppType][] => [
@@ -40,44 +38,14 @@ const FSM_WEB_APP_PATHS = (): [AppName, string, AppType][] => [
   ['DL', 'dataloader', 'WEBAPP_EMBBEDDED'],
   ['CO', 'configuration', 'WEBAPP_EMBBEDDED'],
   ['MP', 'marketplace', 'WEBAPP_EMBBEDDED'],
-  ['CDC', 'checklist-data-collector', 'WEBAPP'],
-  ['SU', 'sign-up', 'WEBAPP'],
+  ['CDC', 'checklist-data-collector', 'WEBAPP_EMBBEDDED'],
+  ['SU', 'sign-up', 'WEBAPP_EMBBEDDED'],
   ['STORE', 'store', 'WEBAPP_EMBBEDDED'],
   ['MAP2', 'service-map', 'WEBAPP_EMBBEDDED'],
   ['TMJ', 'time-material-journal', 'WEBAPP_EMBBEDDED']
 ] as [AppName, string, AppType][];
 
 const appCollection = new AppCollection([
-  /*
-   keys seem outdated
-   ({
-     appShortName: 'ANDROID',
-     githubRepoUrl: 'https://github.com/coresystemsFSM/android-coresuite',
-     type: 'ANDROID' as AppType,
-     envMap: [
-       withSecret(Config.androidSecrets, 'ANDROID-NIGHTLY'),
-       withSecret(Config.androidSecrets, 'ANDROID-BETA'),
-       withSecret(Config.androidSecrets, 'ANDROID-STORE')
-     ]
-   } as IApplication),
-    */
-  ({
-    appShortName: 'FACADE',
-    githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
-    type: 'APP_BACKEND',
-    envMap: ([
-      ['ET', 'https://et.dev.coresuite.com/portal'],
-      ['UT', 'https://et.dev.coresuite.com/portal'],
-      ['QT', 'https://qt.dev.coresuite.com/portal'],
-      ['PT', 'https://pt.dev.coresuite.com/portal'],
-      ['PROD', 'https://apps.coresystems.net/portal'],
-      ['DE', 'https://de.coresystems.net/portal'],
-      ['CN', 'https://cn.coresystems.net/portal'],
-      ['EU', 'https://eu.coresystems.net/portal'],
-      ['US', 'https://us.coresystems.net/portal'],
-      ['SANDBOX', 'https://sb.dev.coresuite.com/portal']
-    ])
-  } as IApplication),
   ({
     appShortName: 'CS',
     githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
@@ -86,7 +54,6 @@ const appCollection = new AppCollection([
       ['ET', 'https://et.dev.coresuite.com/cs'],
       ['UT', 'https://et.dev.coresuite.com/cs'],
       ['QT', 'https://qt.dev.coresuite.com/cs'],
-      ['PT', 'https://pt.dev.coresuite.com/cs'],
       ['PROD', 'https://apps.coresystems.net/cs'],
       ['DE', 'https://de.coresuite.com/cs'],
       ['EU', 'https://eu.coresuite.com/cs'],
@@ -111,7 +78,6 @@ const appCollection = new AppCollection([
       ['ET', 'https://et.dev.coresuite.com/mc'],
       ['UT', 'https://ut.dev.coresuite.com/mc'],
       ['QT', 'https://qt.dev.coresuite.com/mc'],
-      ['PT', 'https://pt.dev.coresuite.com/mc'],
       ['PROD', 'https://ds.coresuite.com/mc'],
       ['DE', 'https://de.coresuite.com/mc'],
       ['EU', 'https://eu.coresuite.com/mc'],
@@ -128,7 +94,6 @@ const appCollection = new AppCollection([
       ['ET', 'https://et.dev.coresuite.com/dc'],
       ['UT', 'https://ut.dev.coresuite.com/dc'],
       ['QT', 'https://qt.dev.coresuite.com/dc'],
-      ['PT', 'https://pt.dev.coresuite.com/dc'],
       ['PROD', 'https://ds.coresuite.com/dc'],
       ['DE', 'https://de.coresuite.com/dc'],
       ['EU', 'https://eu.coresuite.com/dc'],
@@ -145,7 +110,6 @@ const appCollection = new AppCollection([
       ['ET', 'https://et.coresystems.net/admin'],
       ['UT', 'https://ut.coresystems.net/admin'],
       ['QT', 'https://qt.coresystems.net/admin'],
-      ['PT', 'https://pt.coresystems.net/admin'],
       ['PROD', 'https://eu.coresystems.net/admin'],
       ['DE', 'https://de.coresystems.net/admin'],
       ['EU', 'https://eu.coresystems.net/admin'],
@@ -161,6 +125,9 @@ const appCollection = new AppCollection([
     envMap: ([
       ['ET', 'https://et.now.gl'],
       ['QT', 'https://qt.now.gl'],
+      ['US', 'https://us.now.gl'],
+      ['DE', 'https://de.now.gl'],
+      ['EU', 'https://eu.now.gl'],
       ['PROD', 'https://now.gl']
     ])
   } as IApplication),
@@ -171,20 +138,8 @@ const appCollection = new AppCollection([
       type: type,
       githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
       envMap: FSM_WEB_APP_ENV_HOSTS()
-        .filter(([env]) => env !== 'PREVIEW' as EnvName) // on preview all apps run in [WEBAPP_EMBBEDDED] mode
         .reduce((list, [env, url]) => [...list, [env, `${url}/${path}`] as [EnvName, string]], [] as [EnvName, string][]),
     })) as IApplication[],
-
-  ...FSM_WEB_APP_PATHS()
-    .map(([appShortName, path]: [AppName, string, AppType]) => ({
-      appShortName,
-      type: 'WEBAPP_EMBBEDDED' as AppType, // on PREVIEW all apps are WEBAPP_EMBBEDDED
-      githubRepoUrl: 'https://github.com/coresystemsFSM/portal',
-      envMap: FSM_WEB_APP_ENV_HOSTS()
-        .filter(([env]) => env === 'PREVIEW' as EnvName)
-        .reduce((list, [env, url]) => [...list, [env, `${url}/${path}`] as [EnvName, string]], [] as [EnvName, string][]),
-    })) as IApplication[]
-
 
 ] as IApplication[]);
 

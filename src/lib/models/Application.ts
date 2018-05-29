@@ -1,8 +1,7 @@
 import { Maybe } from './Maybe';
 import { Environment, EnvFilter, EnvName, IRequestOptions } from './Environment';
 
-export type AppName = 'FACADE'
-  | 'NOW'
+export type AppName = 'NOW'
   | 'ADMIN'
   | 'DC'
   | 'MC'
