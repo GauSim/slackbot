@@ -23,6 +23,7 @@ echo "remove .env";
 npm run clean:dotenv;
 
 echo "creat zip file artefact ($filename)";
-tar -zcvf $filename .
+touch $filename
+tar --exclude=$filename -zcvf $filename .
 
 echo "done => $filename";
