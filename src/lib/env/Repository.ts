@@ -3,19 +3,6 @@ import { IApplication, AppName, AppType } from '../models/Application';
 import { AppCollection } from '../models/AppCollection';
 import { EnvFilter, Environment, EnvName } from '../models/Environment';
 
-/*
-const withSecret = (secrets: string, env: EnvName): [EnvName, string, Maybe<{ [h: string]: string }>] => {
-  const [realName, url, header] = (secrets.split(',')
-    .map(line => {
-      const [envName, appId, token] = line.split(':');
-      return [envName, `https://rink.hockeyapp.net/api/2/apps/${appId}/app_versions/`, { 'X-HockeyAppToken': token }];
-    })
-    .find(([itsName]) => itsName === env) || [env, '????']) as [EnvName, string, Maybe<{ [h: string]: string }>];
-
-  return [env, url, header];
-}
-*/
-
 const FSM_WEB_APP_ENV_HOSTS = (): [EnvName, string][] => [
   ['ET', 'https://et.coresystems.net'],
   ['QT', 'https://qt.coresystems.net'],
@@ -24,8 +11,7 @@ const FSM_WEB_APP_ENV_HOSTS = (): [EnvName, string][] => [
   ['DE', 'https://de.coresystems.net'],
   ['EU', 'https://eu.coresystems.net'],
   ['CN', 'https://cn.coresystems.net'],
-  ['US', 'https://us.coresystems.net'],
-  ['UT', 'https://ut.coresystems.net']
+  ['US', 'https://us.coresystems.net']
 ] as [EnvName, string][];
 
 const FSM_WEB_APP_PATHS = (): [AppName, string, AppType][] => [
@@ -42,7 +28,8 @@ const FSM_WEB_APP_PATHS = (): [AppName, string, AppType][] => [
   ['SU', 'sign-up', 'WEBAPP_EMBBEDDED'],
   ['STORE', 'store', 'WEBAPP_EMBBEDDED'],
   ['MAP2', 'service-map', 'WEBAPP_EMBBEDDED'],
-  ['TMJ', 'time-material-journal', 'WEBAPP_EMBBEDDED']
+  ['TMJ', 'time-material-journal', 'WEBAPP_EMBBEDDED'],
+  ['SCD', 'service-call-detail', 'WEBAPP_EMBBEDDED']
 ] as [AppName, string, AppType][];
 
 const appCollection = new AppCollection([
@@ -52,7 +39,6 @@ const appCollection = new AppCollection([
     type: 'APP_BACKEND',
     envMap: ([
       ['ET', 'https://et.dev.coresuite.com/cs'],
-      ['UT', 'https://et.dev.coresuite.com/cs'],
       ['QT', 'https://qt.dev.coresuite.com/cs'],
       ['PROD', 'https://apps.coresystems.net/cs'],
       ['DE', 'https://de.coresuite.com/cs'],
@@ -76,7 +62,6 @@ const appCollection = new AppCollection([
     type: 'CLOUD' as AppType,
     envMap: ([
       ['ET', 'https://et.dev.coresuite.com/mc'],
-      ['UT', 'https://ut.dev.coresuite.com/mc'],
       ['QT', 'https://qt.dev.coresuite.com/mc'],
       ['PROD', 'https://ds.coresuite.com/mc'],
       ['DE', 'https://de.coresuite.com/mc'],
@@ -92,7 +77,6 @@ const appCollection = new AppCollection([
     type: 'CLOUD' as AppType,
     envMap: ([
       ['ET', 'https://et.dev.coresuite.com/dc'],
-      ['UT', 'https://ut.dev.coresuite.com/dc'],
       ['QT', 'https://qt.dev.coresuite.com/dc'],
       ['PROD', 'https://ds.coresuite.com/dc'],
       ['DE', 'https://de.coresuite.com/dc'],
@@ -108,7 +92,6 @@ const appCollection = new AppCollection([
     type: 'CLOUD' as AppType,
     envMap: ([
       ['ET', 'https://et.coresystems.net/admin'],
-      ['UT', 'https://ut.coresystems.net/admin'],
       ['QT', 'https://qt.coresystems.net/admin'],
       ['PROD', 'https://eu.coresystems.net/admin'],
       ['DE', 'https://de.coresystems.net/admin'],

@@ -19,7 +19,8 @@ export type AppName = 'NOW'
   | 'STORE'
   | 'ANDROID'
   | 'CS'
-  | 'TMJ';
+  | 'TMJ'
+  | 'SCD';
 
 export type AppType = 'WEBAPP'
   | 'WEBAPP_EMBBEDDED'

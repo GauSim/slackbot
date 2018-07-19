@@ -51,7 +51,7 @@
     "rimraf": "^2.6.1",
     "sinon": "^1.17.6",
     "ts-node": "^3.3.0",
-    "typescript": "^2.5.1",
+    "typescript": "^2.9.2",
     "unit.js": "^2.0.0"
   }
 }

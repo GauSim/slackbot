@@ -4,7 +4,6 @@ import { IFromatParams, Format } from '../Format';
 
 export type EnvName = 'ALL'
   | 'ET'
-  | 'UT'
   | 'QT'
   | 'PROD'
   | 'DE'
