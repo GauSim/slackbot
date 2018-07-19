@@ -38,7 +38,7 @@ class WebhookService {
   }
 
   createHookName(name: string) {
-    const secret = 'server-secret'; // doto read from process 
+    const secret = 'server-secret'; // doto read from process
     return crypto.createHmac('sha256', secret)
       .update(name)
       .digest('hex')
@@ -58,7 +58,7 @@ class WebhookService {
     return this.hooks.keys()
       .then(listOfKeys => {
         console.log('hook:keys', listOfKeys);
-        // delete all hooks 
+        // delete all hooks
         const work = listOfKeys.map(key => this.hooks.delete(key).then(() => { console.log('hooks.delete', key) }))
         return Promise.all(work);
       })
@@ -66,7 +66,7 @@ class WebhookService {
         return this.subscriptions.keys()
           .then(listOfKeys => {
             console.log('subscriptions:keys', listOfKeys);
-            // delete all subscriptions 
+            // delete all subscriptions
             const work = listOfKeys.map(key => this.subscriptions.delete(key).then(() => { console.log('hooks.delete', key) }))
             return Promise.all(work);
           })
@@ -89,7 +89,7 @@ function createBuildResultsUrl(relativUrl: string) {
 
 
 /* usage example:
-curl "http://core-slackbot.herokuapp.com/hooks/gasi/df9e5ec3455f9dfe0480d83e8ace0caf548b302d036bc95bc4c6b1f74d8db802?msg=${bamboo.buildResultKey}&buildResultsUrl=${bamboo.buildResultsUrl}" 
+curl "http://core-slackbot.herokuapp.com/hooks/gasi/df9e5ec3455f9dfe0480d83e8ace0caf548b302d036bc95bc4c6b1f74d8db802?msg=${bamboo.buildResultKey}&buildResultsUrl=${bamboo.buildResultsUrl}"
 */
 export function webhookMiddleware(hookName: string, bots: { [k: string]: any }, req: any, res: any) {
 
@@ -108,7 +108,7 @@ export function webhookMiddleware(hookName: string, bots: { [k: string]: any }, 
     : null;
   console.log('buildResult', buildResult);
 
-  const baseStore = new BaseStorage(process.env.REDIS_URL);
+  const baseStore = new BaseStorage(process.env.REDIS_URL as string);
   const hookService = new WebhookService(baseStore);
 
   hookService.hooks.matchKey(hookName)
@@ -160,7 +160,7 @@ const actions = [
     handler: (bot: IBot, message: IMessage) => {
       bot.reply(message, `thinking ...`);
 
-      const baseStore = new BaseStorage(process.env.REDIS_URL);
+      const baseStore = new BaseStorage(process.env.REDIS_URL as string);
       const hookService = new WebhookService(baseStore);
 
       hookService.getAll()
@@ -179,7 +179,7 @@ const actions = [
     handler: (bot: IBot, message: IMessage) => {
       bot.reply(message, `thinking on it ...`);
 
-      const baseStore = new BaseStorage(process.env.REDIS_URL);
+      const baseStore = new BaseStorage(process.env.REDIS_URL as string);
       const hookService = new WebhookService(baseStore);
 
       hookService.clean()
@@ -202,7 +202,7 @@ const actions = [
     handler: (bot: IBot, message: IMessage) => {
       bot.reply(message, `ok, removing hook ...`);
 
-      const baseStore = new BaseStorage(process.env.REDIS_URL);
+      const baseStore = new BaseStorage(process.env.REDIS_URL as string);
       const hookService = new WebhookService(baseStore);
       const hookName = message.text.replace('hooks remove', '').trim();
 
@@ -226,7 +226,7 @@ const actions = [
     handler: (bot: IBot, message: IMessage) => {
       bot.reply(message, `ok, adding hook ...`);
 
-      const baseStore = new BaseStorage(process.env.REDIS_URL);
+      const baseStore = new BaseStorage(process.env.REDIS_URL as string);
       const userStore = new PartialStore(baseStore, 'users');
 
 
